@@ -1,0 +1,12 @@
+services:
+  maqra-db:
+    image: mongo:7
+    container_name: maqra-db
+    ports:
+      - "127.0.0.1:27018:27017"
+    volumes:
+      - maqra-db-data:/data/db
+    restart: unless-stopped
+
+volumes:
+  maqra-db-data:
