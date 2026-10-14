@@ -16,3 +16,6 @@ out/
 .vscode/*
 !.vscode/extensions.json
 *.log
+
+# Local Arabic copy of CLAUDE.md (developer only)
+docs/CLAUDE.ar.md

@@ -1,68 +1,128 @@
-# مَقرأ: دليل المشروع لكلود
+# Maqra (مَقرأ): project guide for Claude
 
-## ما المشروع
+> An Arabic translation for the developer lives in `docs/CLAUDE.ar.md`. It is local only (ignored by Git, never committed). Keep both files in sync: whenever this file changes, update the Arabic copy too.
 
-مَقرأ أداة تحوّل أي نص عربي إلى صفحة قراءة ميسّرة، فيها:
-- ملخص عام ونقاط رئيسية
-- وحدات قراءة بعناوين وملخصات
-- مصطلحات بمعانيها وشروحها
-- تمييز الجمل المهمة
-- سؤال فهم لكل وحدة
-- جدول محتويات
-- زر لعرض النص الأصلي
+## What the project is
 
-المبدأ الأساسي: **كلام الكاتب لا يتغيّر أبدًا.** كل جملة في الصفحة هي جملة من النص الأصلي حرفيًا. التحليل يشير إلى الجمل برموز فقط، ولا ينسخ النص ولا يعيد صياغته.
+Maqra turns any Arabic text into an easy-reading page with:
+- an overall summary and key points
+- reading units with titles and summaries
+- terms with their meaning, explanation and example
+- importance highlighting of sentences
+- one comprehension question per unit
+- a table of contents
+- a button to view the original text
 
-## كيف يعمل (الوضع المستهدف)
+Core principle: **the author's words never change.** Every sentence on the page is a sentence from the original text, verbatim. The analysis points to sentences by code only; it never copies or rewrites the text.
 
-1. المستخدم يشغّل مهارة `arabic-easy-reading` في محادثة Claude ويرسل النص.
-2. كلود في المحادثة يحلل النص حسب ملفات القواعد، ويكتب `analysis.json`.
-3. كود المهارة يتحقق من التحليل ويبني `document.json`.
-4. المهارة ترسل النص الأصلي و`document.json` إلى الباك إند.
-5. الباك إند يحفظهما في MongoDB ويرجّع رقم المستند.
-6. كلود يعطي المستخدم رابطًا مثل `/read/<id>`.
-7. صفحة Angular تجلب المستند من الباك إند وتعرض صفحة القراءة.
+## How it works
 
-التحليل يتم في محادثة Claude، **لا** عن طريق API. فالباك إند لا يحتاج مفتاح Claude.
+1. The user runs the `arabic-easy-reading` skill in a Claude chat and sends a text.
+2. Claude, in the chat, analyses the text following the rule files and writes `analysis.json`.
+3. The skill's code validates the analysis and builds a fallback HTML page.
+4. The skill sends the original text and the analysis to the backend.
+5. The backend validates the analysis again, builds the document, stores it in MongoDB and returns its id.
+6. Claude gives the user a link such as `/read/<id>`. If sending fails, it delivers the fallback page as a file.
+7. The reading page shows the document. For now it is the skill's HTML template; later it will be the Angular page.
 
-## هيكل المستودع
+The analysis happens in the Claude chat, **not** through the API, so the backend needs no Claude key.
 
-- `skill/arabic-easy-reading/`: المهارة كما تُرفع إلى Claude.
-  - `SKILL.md`: خطوات المهارة.
-  - `rules/`: ملفات القواعد السبعة. هي المرجع لكل ما يكتبه كلود في التحليل.
-  - `scripts/segmenter.js`: يقسّم النص إلى كتل وجمل برموز ثابتة (h1، p3، p3.s2، l1، l1.i4).
-  - `scripts/merge.js`: يتحقق من التحليل ويدمجه مع النص في `document.json`.
-  - `scripts/build.js`: يشغّل merge ويبني صفحة HTML.
-  - `scripts/extract.py`: يستخرج النص من الملفات (docx، pdf، html، …).
-  - `templates/reading-page.html`: صفحة القراءة الحالية. هي المرجع لتصميم صفحة Angular وسلوكها.
-- `samples/`: نصوص اختبار مع تحليلاتها. للتجربة بدون محادثة Claude.
-- `backend/`: (لاحقًا) Node.js، يستقبل المستندات ويحفظها ويرجّعها.
-- `frontend/`: (لاحقًا) Angular، صفحة القراءة.
+## Repository layout
 
-## قرارات تقنية
+- `skill/arabic-easy-reading/`: the skill as uploaded to Claude.
+  - `SKILL.md`: the skill's steps (in Arabic).
+  - `rules/`: the seven rule files. They are the reference for everything Claude writes in the analysis.
+  - `config.json`: the backend URL the skill sends to.
+  - `scripts/segmenter.js`: splits the text into blocks and sentences with stable codes (h1, p3, p3.s2, l1, l1.i4).
+  - `scripts/merge.js`: validates the analysis and merges it with the text into the display document.
+  - `scripts/build.js`: runs merge and builds the HTML page.
+  - `scripts/extract.py`: extracts text from files (docx, pdf, html, …).
+  - `scripts/publish.js`: sends the text and analysis to the backend and prints `LINK:` or `PUBLISH_FAILED:`. It sends with `curl` because Claude's sandbox routes outside connections through a proxy (`HTTPS_PROXY`) that Node's `fetch` ignores.
+  - `scripts/meta.js`: writes `meta.json` next to `input.txt`: start time (prepare.js), number of builds (build.js), file name and type (extract.py).
+  - `templates/reading-page.html`: the current reading page. It is the reference for the Angular page's design and behaviour.
+- `samples/`: test texts with their analyses, for trying things without a Claude chat. Their analyses are older and have no comprehension questions.
+- `compose.yaml`: the local MongoDB container `maqra-db` on `127.0.0.1:27018`.
+- `backend/`: Node.js (Express 5 and mongodb 7, requires Node 20.19 or newer).
+  - `src/server.js`: connects to the database and starts the server. If the connection fails it exits with a clear message (on the server, the container restarts it).
+  - `src/db.js`: the connection and the `documents` collection.
+  - `src/app.js`: the routes.
+  - `src/record.js`: the shape of the stored record.
+  - `src/pages.js`: the temporary reading page and the "not found" page.
+  - `.env.example`: required settings (PORT, MONGO_URL, MONGO_DB, PUBLIC_URL). `.env` is never committed.
+- `frontend/`: (later) Angular, the reading page.
+- `docs/CLAUDE.ar.md`: Arabic copy of this guide, local only (in `.gitignore`).
 
-- **الباك إند:** Node.js. يستخدم `segmenter.js` و`merge.js` كما هما، ولا يعيد كتابتهما.
-- **قاعدة البيانات:** MongoDB. المستند يُحفظ بنفس شكل `document.json`، مع النص الأصلي.
-- **الفرونت إند:** Angular، تُبنى ملفاته الجاهزة ويقدّمها الباك إند من نفس الحاوية.
-- **التشغيل:** حاويتان. `maqra` للباك إند والصفحات، و`maqra-db` لـ MongoDB.
-- **جهاز التطوير:** ماك، وعليه Docker. السيرفر النهائي Ubuntu، وعليه Podman، وNginx يربط الدومين بالحاوية.
-- **المنافذ المحجوزة على جهاز التطوير:** 8061 و6060 مستخدمة لمشروع آخر، فلا تستخدمها.
+## Backend
 
-## قواعد العمل
+**Routes:**
+- `POST /api/documents`: receives `{ text, analysis, source, processing }`. Validates with `merge.js`, and also rejects an analysis without reading units or without a summary. Stores it and returns `{ id, url, warnings }`. Errors: 400 for a malformed request, 422 for an invalid analysis.
+- `GET /api/documents/:id`: returns only the display document (`document`), no internal data.
+- `GET /read/:id`: the temporary reading page (the skill's template) until the Angular page replaces it.
+- `GET /health`
 
-- **اللغة:** المستخدمة تتكلم العربية. اشرح بالعربية، ولا تخلط كلمات إنجليزية داخل الجمل العربية إلا أسماء الملفات والأوامر.
-- **حبة حبة:** خطوة واحدة في كل مرة. اشرح المشكلة بمثال قبل أي تعديل، واعرض رأيك.
-- **الأسئلة:** بصيغة «**السؤال الأول:** …»، مع توصيتك.
-- **لا أسرار في الكود:** كلمات المرور وروابط قاعدة البيانات توضع في `.env`، وهو مستثنى من Git. ضع مثالًا بلا قيم حقيقية في `.env.example`.
-- **segmenter.js وmerge.js حساسان:** أي تعديل عليهما يحتاج إعادة بناء كل النصوص في `samples/` والتأكد أن الرموز لم تتغير، لأن التحليلات المحفوظة تعتمد عليها.
-- **ملفات القواعد معتمدة:** لا تعدّلها إلا بطلب صريح، وارفع رقم الإصدار في أول الملف عند أي تعديل.
+**Id:** 10 random `base64url` characters. The link is not stored; it is built from `PUBLIC_URL` + `/read/` + id.
 
-## أوامر مفيدة
+**`documents` record:**
+- `_id`, `title` (the author's title, otherwise the first unit's title), `wordCount`
+- `source`: `{ type: paste | file | url, fileName?, url? }`
+- `versions`: `{ skill, schema, segmenter, rules }`
+- `stats`: units, key points, terms, questions, importance shares
+- `quality`: `{ warnings, attempts }`
+- `textProfile`: headings, paragraphs, sentences, lists, list items, `hasAuthorTitle`
+- `processing`: `{ fileType, extractionMethod (not recorded yet), reviewed, durationMs }`
+- `originalText`, `analysis` (as Claude wrote it), `document` (ready to display), `createdAt`
 
-بناء صفحة من نص وتحليل جاهزين:
+The numbers in `stats` and `textProfile` are computed by the backend from the document, never taken from the request.
+
+**Later collections:** `events` (reading log, with the Angular page), `users` and `progress` (with sign-in), `feedback` (optional).
+
+## Running locally
+
+1. `docker compose up -d` (database).
+2. `cd backend && npm start`.
+3. `ngrok http --url=turret-each-tipping.ngrok-free.dev 3010` (a fixed public URL so Claude can reach the backend).
+4. While testing from Claude, `backend/.env` has `PUBLIC_URL=https://turret-each-tipping.ngrok-free.dev`.
+5. In Claude's settings: Allow network egress on, domain allowlist "Package managers only", plus `turret-each-tipping.ngrok-free.dev` in additional allowed domains.
+
+To browse the data: MongoDB Compass at `mongodb://127.0.0.1:27018`.
+
+## Technical decisions
+
+- **Backend:** Node.js. It uses `segmenter.js` and `merge.js` as they are, never rewrites them.
+- **Database:** MongoDB. The document is stored in the same shape as the skill's `document.json`, together with the original text.
+- **Frontend:** Angular. Its built files are served by the backend from the same container.
+- **Deployment:** two containers. `maqra` for the backend and pages, `maqra-db` for MongoDB.
+- **Analysis in the Claude chat, not through the API:** the skill sends the result to the backend. Every user must allow Maqra's domain in their Claude settings; the likely solution at deployment is a connector.
+- **Repository:** in the developer's personal GitHub account for now; it moves to the organisation account (`ksaa-nlp`) before deployment on the organisation's server.
+- **Development machine:** macOS with Docker. The production server is Ubuntu with Podman, and Nginx maps the domain to the container.
+- **Reserved ports on the development machine:** 8061 and 6060 are used by another project; do not use them.
+
+## Remaining work
+
+1. The Angular reading page with all features of the current page, then a redesign of the visual identity, then the `events` reading log.
+2. Before deployment: a shared secret between the skill and the backend, request rate limiting, the `maqra` container, a database password, and deletion of a text at its owner's request.
+   - **Privacy:** users are told that their text is stored **before** they use the skill (in its description or the message it is distributed with), not in every reply. The wording will be written together with the developer. Check the organisation's policy and the Saudi Personal Data Protection Law.
+3. Deployment: move the repository to the organisation, coordinate with the server administrator (subdomain and Nginx), and change `config.json`.
+4. Later: related topics, text classification, accounts, raising the 1500-word limit, recording the extraction method.
+
+## Working rules
+
+- **Language:** the developer speaks Arabic. Explain in Arabic, and do not mix English words into Arabic sentences except file names and commands. Code, code comments and commit messages are in English. Text shown to end users is in Arabic.
+- **Step by step:** one step at a time. Explain the problem with an example before any change, and give your opinion.
+- **Questions:** in the form «**السؤال الأول:** …», with your recommendation.
+- **Piece by piece:** explain the piece, discuss its decisions with the developer, then write it; it is tested and committed before the next one.
+- **Commit messages:** English, Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:`), a short title and detail bullets.
+- **No secrets in code:** passwords and database URLs go in `.env`, which is excluded from Git. Put an example without real values in `.env.example`.
+- **segmenter.js and merge.js are sensitive:** any change requires rebuilding every text in `samples/` and checking that the codes did not change, because stored analyses depend on them.
+- **The rule files are approved:** change them only on explicit request, and bump the version number at the top of the file on any change.
+- **Keep the guide current:** update this file and `docs/CLAUDE.ar.md` after each phase or decision.
+
+## Useful commands
+
+Build a page from a ready text and analysis:
 
 ```bash
 node skill/arabic-easy-reading/scripts/build.js samples/ai.txt samples/ai.analysis.json /tmp/out
 ```
 
-ثم افتح `/tmp/out/reading-page.html` في المتصفح.
+Then open `/tmp/out/reading-page.html` in the browser.
