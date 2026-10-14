@@ -1,0 +1,16 @@
+{
+  "name": "maqra-backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Maqra backend: stores analysed Arabic texts and serves them to the reading page.",
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=20.6"
+  },
+  "scripts": {
+    "start": "node --env-file=.env src/server.js"
+  },
+  "dependencies": {
+    "mongodb": "^7.7.0"
+  }
+}
