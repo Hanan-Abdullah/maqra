@@ -1,0 +1,557 @@
+<title>قراءة مُيسّرة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap">
+<style>
+/* Layout: a single reading column; overview first, then the text unit by unit; term cards open as a side sheet (bottom sheet on phones) */
+:root {
+  --paper: #f5f6f3;
+  --sheet: #ffffff;
+  --ink: #1f2522;
+  --ink-soft: #56605b;
+  --rule: #dfe3df;
+  --accent: #2f5d50;
+  --accent-soft: #e4eeea;
+  --marker: #fbe7a1;
+  --marker-ink: #1f2522;
+  --term-line: #2f5d50;
+  --src: #dbe9fb; --src-line: #2f6db3;
+  --ok: #2f6b45; --ok-soft: #e3f1e8; --bad: #a33a2c; --bad-soft: #f8e6e2;
+  --shadow: 0 10px 30px rgba(20, 30, 25, 0.12);
+  --font-read: "Noto Naskh Arabic", "Amiri", "Times New Roman", serif;
+  --font-ui: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #151a18; --sheet: #1c2220; --ink: #e6ebe8; --ink-soft: #9fa9a4; --rule: #2d3532;
+    --accent: #8cc7b3; --accent-soft: #23312c; --marker: #5c4d17; --marker-ink: #f6eed3; --term-line: #8cc7b3;
+    --src: #1d3552; --src-line: #8db8ec; --ok: #8fd1a8; --ok-soft: #1e3327; --bad: #f0a598; --bad-soft: #3d2420;
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.45); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #151a18; --sheet: #1c2220; --ink: #e6ebe8; --ink-soft: #9fa9a4; --rule: #2d3532;
+  --accent: #8cc7b3; --accent-soft: #23312c; --marker: #5c4d17; --marker-ink: #f6eed3; --term-line: #8cc7b3;
+    --src: #1d3552; --src-line: #8db8ec; --ok: #8fd1a8; --ok-soft: #1e3327; --bad: #f0a598; --bad-soft: #3d2420;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.45); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font-ui); font-size: 15px; }
+.page { max-width: 760px; margin-inline: auto; padding-inline: 16px; padding-block: 28px 80px; display: grid; gap: 22px; }
+
+/* table of contents: sticky column on the right (wide screens), bottom sheet on phones */
+.toc { font-family: var(--font-ui); }
+.toc-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.toc-list, .toc-sub { list-style: none; margin: 0; padding: 0; }
+.toc-list { display: grid; gap: 2px; }
+.toc-item {
+  width: 100%; font: inherit; font-size: 0.88rem; line-height: 1.6; text-align: start; color: var(--ink);
+  background: none; border: 0; border-radius: 8px; padding: 6px 8px; cursor: pointer;
+  display: grid; grid-template-columns: 18px 1fr; gap: 6px; align-items: baseline;
+}
+.toc-item:hover { background: var(--accent-soft); }
+.toc-mark { font-size: 0.75rem; color: var(--accent); text-align: center; }
+.toc-unit.current > .toc-item { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.toc-unit.done > .toc-item .toc-title { color: var(--ink-soft); }
+.toc-sub .toc-item { font-size: 0.8rem; color: var(--ink-soft); padding-block: 3px; padding-inline-start: 32px; grid-template-columns: 1fr; }
+.toggle.toc-btn { display: none; }
+.toggle.toc-btn::before { content: "☰"; width: auto; height: auto; border: 0; border-radius: 0; font-size: 0.9rem; line-height: 1; }
+.toc-close { display: none; }
+@media (min-width: 1100px) {
+  .shell { display: grid; grid-template-columns: 250px minmax(0, 760px); justify-content: center; gap: 28px; padding-inline: 16px; }
+  .shell .page { margin: 0; padding-inline: 0; }
+  .toc { position: sticky; top: 0; align-self: start; max-height: 100vh; overflow: auto; padding-block: 28px; }
+}
+@media (max-width: 1099px) {
+  .toc { display: none; }
+  .toc.open {
+    display: block; position: fixed; z-index: 21; inset-inline: 0; inset-block-end: 0; max-height: 75vh; overflow: auto;
+    background: var(--sheet); border: 1px solid var(--rule); border-radius: 16px 16px 0 0; box-shadow: var(--shadow);
+    padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+  .toggle.toc-btn { display: inline-flex; }
+  .toc-close { display: inline-block; }
+}
+
+/* header */
+.doc-head { display: grid; gap: 8px; }
+.eyebrow { font-size: 0.8rem; color: var(--accent); font-weight: 600; letter-spacing: 0.02em; }
+.doc-title { font-family: var(--font-read); font-size: clamp(1.5rem, 4vw, 2rem); line-height: 1.5; margin: 0; text-wrap: balance; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 16px; color: var(--ink-soft); font-size: 0.85rem; }
+
+/* toolbar */
+.toolbar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 12px;
+  background: var(--sheet); border: 1px solid var(--rule); border-radius: 12px;
+}
+.toggle {
+  font: inherit; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 999px; border: 1px solid var(--rule);
+  background: transparent; color: var(--ink-soft); cursor: pointer;
+}
+.toggle::before { content: ""; width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid currentColor; }
+.toggle[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); border-color: transparent; font-weight: 600; }
+.toggle[aria-pressed="true"]::before { background: currentColor; }
+.toggle:disabled { opacity: 0.4; cursor: default; }
+.toc-item:focus-visible, .quiz-opt:focus-visible, .fold-btn:focus-visible, .finish-btn:focus-visible, .link-btn:focus-visible, .toggle:focus-visible, .kp-link:focus-visible, .term:focus-visible, .close:focus-visible, .unit-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* overview */
+.overview { background: var(--sheet); border: 1px solid var(--rule); border-radius: 14px; padding: 18px 20px; display: grid; gap: 14px; }
+.label { font-size: 0.78rem; font-weight: 600; color: var(--accent); letter-spacing: 0.02em; margin: 0; }
+.summary { font-family: var(--font-read); font-size: 1.12rem; line-height: 2; margin: 0; }
+.kp-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.kp-link {
+  width: 100%; text-align: start; font: inherit; color: var(--ink); background: transparent; border: 0;
+  display: grid; grid-template-columns: 26px 1fr; gap: 8px; align-items: baseline;
+  padding: 8px 6px; border-radius: 8px; cursor: pointer; line-height: 1.8;
+}
+.kp-link:hover { background: var(--accent-soft); }
+.kp-num { font-size: 0.78rem; color: var(--accent); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* units */
+.units { display: grid; gap: 18px; }
+.unit { background: var(--sheet); border: 1px solid var(--rule); border-radius: 14px; padding: 18px 20px 22px; scroll-margin-top: 80px; }
+.unit.flash { animation: flash 1.2s ease-out; }
+@keyframes flash { from { box-shadow: 0 0 0 3px var(--accent); } to { box-shadow: 0 0 0 0 transparent; } }
+.unit-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.unit-head-text { display: grid; gap: 4px; min-width: 0; }
+.fold-btn {
+  flex: none; font: inherit; font-size: 0.8rem; font-weight: 600; color: var(--accent);
+  background: transparent; border: 1px solid var(--rule); border-radius: 999px;
+  padding: 5px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+}
+.fold-btn:hover { background: var(--accent-soft); }
+.fold-btn::after { content: "▾"; font-size: 0.75rem; transition: transform 0.2s; }
+.fold-btn::after { transform: rotate(90deg); }
+.done-badge { font-size: 0.75rem; font-weight: 600; color: var(--accent); background: var(--accent-soft); border-radius: 999px; padding: 2px 8px; margin-inline-start: 8px; vertical-align: middle; }
+.unit:not(.collapsed) .done-badge, .unit:not(.collapsed) .fold-btn { display: none; }
+.unit.collapsed { padding-bottom: 14px; }
+.unit.collapsed .text, .unit.collapsed .unit-end { display: none; }
+.unit.collapsed .unit-summary { margin-bottom: 0; }
+.unit-end { display: flex; justify-content: flex-end; margin-top: 4px; }
+.finish-btn {
+  font: inherit; font-size: 0.85rem; font-weight: 600; color: var(--accent); background: var(--accent-soft);
+  border: 0; border-radius: 10px; padding: 8px 14px; cursor: pointer;
+}
+.finish-btn:hover { filter: brightness(0.97); }
+.progress { margin-inline-start: auto; display: inline-flex; align-items: center; gap: 10px; font-size: 0.85rem; color: var(--ink-soft); }
+.link-btn { font: inherit; font-size: 0.85rem; color: var(--accent); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.unit-num { font-size: 0.78rem; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.unit-title { font-family: var(--font-read); font-size: 1.3rem; margin: 0; line-height: 1.6; text-wrap: balance; }
+.unit-summary { background: var(--accent-soft); border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; }
+.unit-summary p { margin: 6px 0 0; font-family: var(--font-read); line-height: 1.9; font-size: 1rem; }
+.unit-toggle { font: inherit; font-size: 0.8rem; font-weight: 600; color: var(--accent); background: none; border: 0; padding: 0; cursor: pointer; }
+
+/* reading text */
+.text { font-family: var(--font-read); font-size: 1.15rem; line-height: 2.15; }
+.text p { margin: 0 0 14px; }
+.text h2, .text h3 { font-size: 1.15rem; margin: 18px 0 6px; color: var(--accent); }
+.text ul, .text ol { margin: 0 0 14px; padding-inline-start: 1.4em; }
+.s { transition: opacity 0.2s, background 0.2s; border-radius: 3px; }
+.show-imp .s.primary { background: var(--marker); color: var(--marker-ink); box-decoration-break: clone; -webkit-box-decoration-break: clone; padding: 1px 2px; }
+.show-imp .s.secondary { opacity: 0.7; }
+.term { display: inline; font: inherit; line-height: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: default; text-align: inherit; }
+.show-terms .term { cursor: pointer; }
+.show-terms .term.first { text-decoration: underline dotted var(--term-line); text-decoration-thickness: 1.5px; text-underline-offset: 7px; cursor: pointer; }
+.show-terms .term:hover { color: var(--accent); }
+
+/* comprehension questions (hidden until the reader turns them on) */
+.quiz { display: none; margin-top: 6px; border: 1px solid var(--rule); border-radius: 12px; padding: 14px 16px; }
+.show-quiz .quiz { display: grid; gap: 10px; }
+.unit.collapsed .quiz { display: none; }
+.quiz-q { margin: 0; font-family: var(--font-read); font-size: 1.05rem; line-height: 1.9; font-weight: 600; }
+.quiz-opts { display: grid; gap: 8px; }
+.quiz-opt {
+  font: inherit; font-family: var(--font-read); font-size: 1rem; line-height: 1.8; text-align: start; color: var(--ink);
+  background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; padding: 8px 12px; cursor: pointer;
+}
+.quiz-opt:hover:not(:disabled) { border-color: var(--accent); }
+.quiz-opt:disabled { cursor: default; }
+.quiz-opt.right { border-color: var(--ok); background: var(--ok-soft); color: var(--ok); font-weight: 600; }
+.quiz-opt.wrong { border-color: var(--bad); background: var(--bad-soft); color: var(--bad); }
+.quiz-fb { margin: 0; font-family: var(--font-read); line-height: 1.9; }
+.quiz-fb b { margin-inline-end: 4px; }
+.quiz-fb.ok b { color: var(--ok); } .quiz-fb.no b { color: var(--bad); }
+.quiz-actions { display: flex; flex-wrap: wrap; gap: 14px; }
+#units .s.src { opacity: 1; background: var(--src); box-shadow: inset 0 -2px 0 var(--src-line); color: var(--ink); box-decoration-break: clone; -webkit-box-decoration-break: clone; padding: 1px 2px; }
+
+/* term sheet */
+.scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.25); z-index: 20; }
+.sheet {
+  position: fixed; z-index: 21; inset-block-start: 16px; inset-inline-start: 16px; max-height: calc(100% - 32px); width: min(380px, calc(100% - 32px));
+  background: var(--sheet); border: 1px solid var(--rule); border-radius: 16px; box-shadow: var(--shadow);
+  padding: 20px; overflow: auto; display: grid; gap: 14px; align-content: start;
+}
+@media (max-width: 640px) {
+  .sheet { inset-block: auto 0; inset-inline: 0; width: 100%; max-height: 75vh; border-radius: 16px 16px 0 0; padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
+}
+.sheet-head { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
+.sheet h2 { font-family: var(--font-read); font-size: 1.35rem; margin: 0; line-height: 1.5; }
+.translation { direction: ltr; unicode-bidi: isolate; text-align: right; color: var(--accent); font-size: 0.95rem; font-weight: 500; margin-top: 2px; }
+.close { font: inherit; font-size: 1.3rem; line-height: 1; background: none; border: 0; color: var(--ink-soft); cursor: pointer; padding: 4px; }
+.field p { margin: 4px 0 0; font-family: var(--font-read); line-height: 1.9; font-size: 1.02rem; }
+.field.example p { border-inline-start: 3px solid var(--accent); padding-inline-start: 10px; }
+.count { font-size: 0.8rem; color: var(--ink-soft); }
+.empty { color: var(--ink-soft); }
+/* original-text view: the author's text only, without anything the page added */
+.toggle.orig-btn::before { content: none; }
+.orig .toolbar .toggle:not(.orig-btn), .orig .progress, .orig .overview, .orig .toc, .orig .unit-head, .orig .unit-summary, .orig .quiz, .orig .unit-end, .orig .no-author-title, .orig .meta { display: none !important; }
+.orig .units { gap: 0; background: var(--sheet); border: 1px solid var(--rule); border-radius: 14px; padding: 18px 20px 8px; }
+.orig .unit { border: 0; border-radius: 0; background: none; padding: 0; box-shadow: none; animation: none; }
+.orig .unit.collapsed .text { display: block; }
+.orig #units .s { background: none; opacity: 1; box-shadow: none; padding: 0; color: inherit; }
+.orig #units .term { text-decoration: none; cursor: text; pointer-events: none; color: inherit; }
+.orig-note { font-size: 0.85rem; color: var(--ink-soft); margin: 0; }
+@media (min-width: 1100px) { .shell.orig { grid-template-columns: minmax(0, 760px); } }
+@media (prefers-reduced-motion: reduce) { .unit.flash { animation: none; } .s { transition: none; } }
+</style>
+
+<div class="shell" id="shell" dir="rtl" lang="ar">
+<nav class="toc" id="toc" aria-label="المحتويات" hidden>
+  <div class="toc-head">
+    <p class="label">المحتويات</p>
+    <button class="close toc-close" id="toc-close" type="button" aria-label="إغلاق المحتويات">×</button>
+  </div>
+  <ol class="toc-list" id="toc-list"></ol>
+</nav>
+<main class="page">
+  <header class="doc-head">
+    <span class="eyebrow" id="eyebrow">قراءة مُيسّرة</span>
+    <h1 class="doc-title" id="title"></h1>
+    <div class="meta" id="meta"></div>
+  </header>
+
+  <nav class="toolbar" aria-label="عرض الخصائص">
+    <button class="toggle" id="t-imp" type="button" aria-pressed="true">تمييز المهم</button>
+    <button class="toggle" id="t-terms" type="button" aria-pressed="true">المصطلحات</button>
+    <button class="toggle" id="t-ss" type="button" aria-pressed="true">ملخصات الأقسام</button>
+    <button class="toggle" id="t-quiz" type="button" aria-pressed="false">اختبر فهمي</button>
+    <button class="toggle toc-btn" id="t-toc" type="button" hidden>المحتويات</button>
+    <button class="toggle orig-btn" id="t-orig" type="button" aria-pressed="false">النص الأصلي</button>
+    <span class="progress" id="progress" hidden><span id="progress-text"></span><button class="link-btn" id="open-all" type="button" hidden>فتح الكل</button></span>
+  </nav>
+
+  <section class="overview" aria-labelledby="ov-label">
+    <div>
+      <p class="label" id="ov-label">الملخص</p>
+      <p class="summary" id="summary"></p>
+    </div>
+    <div id="kp-wrap">
+      <p class="label">النقاط الرئيسية</p>
+      <ol class="kp-list" id="kps"></ol>
+    </div>
+  </section>
+
+  <div class="units" id="units"></div>
+</main>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-term" hidden dir="rtl" lang="ar">
+  <div class="sheet-head">
+    <div>
+      <h2 id="sh-term"></h2>
+      <div class="translation" id="sh-tr"></div>
+    </div>
+    <button class="close" id="sh-close" type="button" aria-label="إغلاق">×</button>
+  </div>
+  <div class="field"><p class="label">المعنى</p><p id="sh-meaning"></p></div>
+  <div class="field"><p class="label">الشرح</p><p id="sh-expl"></p></div>
+  <div class="field example"><p class="label">مثال</p><p id="sh-ex"></p></div>
+  <div class="count" id="sh-count"></div>
+</aside>
+
+<script id="doc-data" type="application/json">/*__DOCUMENT__*/</script>
+<script>
+(function () {
+  'use strict';
+  var DOC = JSON.parse(document.getElementById('doc-data').textContent);
+  var A = DOC.analysis, T = DOC.text, D = DOC.display || {};
+  var $ = function (id) { return document.getElementById(id); };
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+  // ---- lookups
+  var blockById = {}; T.blocks.forEach(function (b) { blockById[b.id] = b; });
+  var termById = {}; var occBySentence = {}; var seenInUnit = {};
+  A.terms.forEach(function (t) {
+    termById[t.id] = t;
+    t.occurrences.forEach(function (o) { (occBySentence[o.at] = occBySentence[o.at] || []).push({ start: o.start, end: o.end, id: t.id }); });
+  });
+
+  // ---- header
+  var first = T.blocks[0];
+  var titleBlock = first && first.type === 'heading' ? first : null;
+  $('title').textContent = titleBlock ? titleBlock.text : (A.readingUnits[0] && A.readingUnits[0].title) || 'النص';
+  if (!titleBlock) $('title').classList.add('no-author-title');
+  var minutes = Math.max(1, Math.round(T.wordCount / 180));
+  [T.wordCount + ' كلمة', 'قراءة ' + minutes + ' دقيقة تقريبًا', A.readingUnits.length + (A.readingUnits.length === 1 ? ' وحدة' : ' وحدات'), A.terms.length + ' مصطلحًا']
+    .forEach(function (m) { $('meta').appendChild(el('span', null, m)); });
+
+  // ---- overview
+  $('summary').textContent = A.summary;
+  if (!A.keyPoints.length) $('kp-wrap').hidden = true;
+  A.keyPoints.forEach(function (kp, i) {
+    var li = el('li'); var b = el('button', 'kp-link'); b.type = 'button';
+    b.appendChild(el('span', 'kp-num', String(i + 1)));
+    b.appendChild(el('span', null, kp.text));
+    b.addEventListener('click', function () { goToUnit(kp.unit); });
+    li.appendChild(b); $('kps').appendChild(li);
+  });
+
+  // ---- sentence rendering with term marks
+  function renderSentence(id, text) {
+    var span = el('span', 's ' + (A.importance[id] || '')); span.dataset.id = id;
+    var occ = (occBySentence[id] || []).slice().sort(function (a, b) { return a.start - b.start; });
+    var pos = 0;
+    occ.forEach(function (o) {
+      if (o.start < pos) return; // skip overlaps
+      if (o.start > pos) span.appendChild(document.createTextNode(text.slice(pos, o.start)));
+      var m = el('button', 'term', text.slice(o.start, o.end)); m.type = 'button'; m.dataset.term = o.id;
+      if (!seenInUnit[o.id]) { m.classList.add('first'); seenInUnit[o.id] = true; }
+      span.appendChild(m); pos = o.end;
+    });
+    if (pos < text.length) span.appendChild(document.createTextNode(text.slice(pos)));
+    return span;
+  }
+  function renderBlock(b) {
+    if (b.type === 'heading') { var hh = el(b === titleBlock ? 'span' : 'h3', null, b === titleBlock ? '' : b.text); hh.id = 'blk-' + b.id; return hh; }
+    if (b.type === 'list') {
+      var list = el(b.ordered ? 'ol' : 'ul');
+      b.items.forEach(function (it) { var li = el('li'); li.appendChild(renderSentence(it.id, it.text)); list.appendChild(li); });
+      return list;
+    }
+    var p = el('p');
+    b.sentences.forEach(function (s, k) { if (k) p.appendChild(document.createTextNode(' ')); p.appendChild(renderSentence(s.id, s.text)); });
+    return p;
+  }
+
+  // ---- units (folding: a read unit collapses to its title and summary)
+  var FOLDING = A.readingUnits.length > 1;
+  var STORE = 'easy-reading:' + (DOC.createdAt || '') + ':collapsed';
+  var collapsed = {};
+  try { (JSON.parse(localStorage.getItem(STORE) || '[]')).forEach(function (n) { collapsed[n] = true; }); } catch (e) {}
+  A.readingUnits.forEach(function (u) {
+    seenInUnit = {};
+    var sec = el('section', 'unit'); sec.id = 'unit-' + u.n;
+    var head = el('div', 'unit-head');
+    var headText = el('div', 'unit-head-text');
+    if (A.readingUnits.length > 1) headText.appendChild(el('span', 'unit-num', 'الوحدة ' + u.n + ' من ' + A.readingUnits.length));
+    var h = el('h2', 'unit-title', u.title);
+    if (FOLDING) h.appendChild(el('span', 'done-badge', '✓ مقروءة'));
+    headText.appendChild(h);
+    head.appendChild(headText);
+    if (FOLDING) {
+      // shown only while the unit is collapsed; reading forward is done with the finish button
+      var fb = el('button', 'fold-btn', 'فتح'); fb.type = 'button';
+      fb.setAttribute('aria-expanded', 'false'); fb.setAttribute('aria-controls', 'unit-text-' + u.n);
+      fb.addEventListener('click', function () { setCollapsed(u.n, false); });
+      head.appendChild(fb);
+    }
+    sec.appendChild(head);
+    if (u.summary && u.showSummary !== false && D.showSectionSummaries) {
+      var box = el('div', 'unit-summary ss');
+      box.appendChild(el('p', 'label', 'ملخص الوحدة'));
+      box.appendChild(el('p', null, u.summary));
+      sec.appendChild(box);
+    }
+    var text = el('div', 'text'); text.id = 'unit-text-' + u.n;
+    u.blocks.forEach(function (id) { if (blockById[id] && blockById[id] !== titleBlock) text.appendChild(renderBlock(blockById[id])); });
+    sec.appendChild(text);
+    if (u.question && u.question.show) sec.appendChild(renderQuiz(u));
+    if (FOLDING) {
+      var end = el('div', 'unit-end');
+      var fin = el('button', 'finish-btn', u.n < A.readingUnits.length ? 'انتهيت، الوحدة التالية ←' : 'انتهيت من القراءة ✓'); fin.type = 'button';
+      fin.addEventListener('click', function () {
+        setCollapsed(u.n, true);
+        if (u.n < A.readingUnits.length) goToUnit(u.n + 1); else goToUnit(u.n, true);
+      });
+      end.appendChild(fin); sec.appendChild(end);
+    }
+    $('units').appendChild(sec);
+  });
+
+  function renderQuiz(u) {
+    var q = u.question, box = el('div', 'quiz');
+    box.appendChild(el('p', 'label', 'سؤال'));
+    box.appendChild(el('p', 'quiz-q', q.text));
+    var opts = el('div', 'quiz-opts'); opts.setAttribute('role', 'group'); opts.setAttribute('aria-label', 'الخيارات');
+    var fb = el('p', 'quiz-fb'); fb.hidden = true; fb.setAttribute('aria-live', 'polite');
+    var actions = el('div', 'quiz-actions'); actions.hidden = true;
+    var btns = q.options.map(function (o, i) {
+      var b = el('button', 'quiz-opt', o); b.type = 'button';
+      b.addEventListener('click', function () { answer(i); });
+      opts.appendChild(b); return b;
+    });
+    function answer(i) {
+      var right = i === q.answer;
+      btns.forEach(function (b, k) { b.disabled = true; if (k === q.answer) b.classList.add('right'); else if (k === i) b.classList.add('wrong'); });
+      fb.className = 'quiz-fb ' + (right ? 'ok' : 'no'); fb.textContent = '';
+      fb.appendChild(el('b', null, right ? '✓ صحيح.' : '✗ إجابة غير صحيحة.'));
+      fb.appendChild(document.createTextNode(' '));
+      fb.appendChild(document.createTextNode(q.explanation || ''));
+      fb.hidden = false; actions.hidden = false;
+      markSources(q.sources, true);
+    }
+    if (q.sources.length) {
+      var show = el('button', 'link-btn', 'أين ذُكر هذا في النص؟'); show.type = 'button';
+      show.addEventListener('click', function () {
+        var s = document.querySelector('.s[data-id="' + q.sources[0] + '"]');
+        if (s) s.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' });
+      });
+      actions.appendChild(show);
+    }
+    var again = el('button', 'link-btn', 'أعد المحاولة'); again.type = 'button';
+    again.addEventListener('click', function () {
+      btns.forEach(function (b) { b.disabled = false; b.classList.remove('right', 'wrong'); });
+      fb.hidden = true; actions.hidden = true; markSources(q.sources, false); btns[0].focus();
+    });
+    actions.appendChild(again);
+    box.appendChild(opts); box.appendChild(fb); box.appendChild(actions);
+    return box;
+  }
+  function markSources(ids, on) {
+    ids.forEach(function (id) { var s = document.querySelector('.s[data-id="' + id + '"]'); if (s) s.classList.toggle('src', on); });
+  }
+
+  function setCollapsed(n, on) {
+    var sec = $('unit-' + n); if (!sec) return;
+    sec.classList.toggle('collapsed', on);
+    var fb = sec.querySelector('.fold-btn');
+    if (fb) fb.setAttribute('aria-expanded', String(!on));
+    if (on) collapsed[n] = true; else delete collapsed[n];
+    try { localStorage.setItem(STORE, JSON.stringify(Object.keys(collapsed).map(Number))); } catch (e) {}
+    updateProgress();
+  }
+  function updateProgress() {
+    if (typeof updateToc === 'function') updateToc();
+    if (!FOLDING) return;
+    var done = Object.keys(collapsed).length, total = A.readingUnits.length;
+    $('progress').hidden = false;
+    $('progress-text').textContent = done === total ? 'قرأت كل الوحدات ✓' : 'قرأت ' + done + ' من ' + total;
+    $('open-all').hidden = done === 0;
+  }
+  // ---- table of contents
+  var TOC = A.readingUnits.length > 1;
+  var tocUnits = {};
+  if (TOC) {
+    $('toc').hidden = false; $('t-toc').hidden = false;
+    A.readingUnits.forEach(function (u) {
+      var li = el('li', 'toc-unit'); tocUnits[u.n] = li;
+      var b = el('button', 'toc-item'); b.type = 'button';
+      b.appendChild(el('span', 'toc-mark', String(u.n)));
+      b.appendChild(el('span', 'toc-title', u.title));
+      b.addEventListener('click', function () { closeToc(); goToUnit(u.n); });
+      li.appendChild(b);
+      var heads = u.blocks.map(function (id) { return blockById[id]; }).filter(function (bl) { return bl && bl.type === 'heading' && bl !== titleBlock; });
+      if (heads.length) {
+        var sub = el('ol', 'toc-sub');
+        heads.forEach(function (hb) {
+          var hi = el('li'); var hbtn = el('button', 'toc-item', hb.text); hbtn.type = 'button';
+          hbtn.addEventListener('click', function () {
+            closeToc(); goToUnit(u.n);
+            var t = $('blk-' + hb.id); if (t) t.scrollIntoView({ behavior: smooth(), block: 'start' });
+          });
+          hi.appendChild(hbtn); sub.appendChild(hi);
+        });
+        li.appendChild(sub);
+      }
+      $('toc-list').appendChild(li);
+    });
+    $('t-toc').addEventListener('click', function () { $('toc').classList.add('open'); $('scrim').hidden = false; $('toc-close').focus(); });
+    $('toc-close').addEventListener('click', closeToc);
+    var ticking = false;
+    window.addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(function () { ticking = false; markCurrent(); }); } }, { passive: true });
+    markCurrent(); updateToc();
+  }
+  function smooth() { return matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'; }
+  function closeToc() { if ($('toc').classList.contains('open')) { $('toc').classList.remove('open'); $('scrim').hidden = true; } }
+  function updateToc() {
+    if (!TOC) return;
+    A.readingUnits.forEach(function (u) {
+      var li = tocUnits[u.n], done = !!collapsed[u.n];
+      li.classList.toggle('done', done);
+      li.querySelector('.toc-mark').textContent = done ? '✓' : String(u.n);
+    });
+  }
+  function markCurrent() {
+    var cur = 1;
+    A.readingUnits.forEach(function (u) { var s = $('unit-' + u.n); if (s && s.getBoundingClientRect().top <= 140) cur = u.n; });
+    A.readingUnits.forEach(function (u) { tocUnits[u.n].classList.toggle('current', u.n === cur); });
+  }
+
+  $('open-all').addEventListener('click', function () { A.readingUnits.forEach(function (u) { setCollapsed(u.n, false); }); });
+  A.readingUnits.forEach(function (u) { if (collapsed[u.n]) setCollapsed(u.n, true); });
+  updateProgress();
+
+  function goToUnit(n, keepCollapsed) {
+    var s = $('unit-' + n); if (!s) return;
+    if (s.classList.contains('collapsed') && !keepCollapsed) setCollapsed(n, false);
+    s.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+    s.classList.remove('flash'); void s.offsetWidth; s.classList.add('flash');
+  }
+
+  // ---- toggles
+  var root = $('units');
+  function bindToggle(btn, cls, enabled, onChange) {
+    if (!enabled) { btn.disabled = true; btn.setAttribute('aria-pressed', 'false'); btn.title = 'غير متاح لهذا النص'; return; }
+    function apply(on) { btn.setAttribute('aria-pressed', String(on)); onChange(on); }
+    btn.addEventListener('click', function () { apply(btn.getAttribute('aria-pressed') !== 'true'); });
+    apply(true);
+  }
+  bindToggle($('t-imp'), 'show-imp', D.showImportance, function (on) { root.classList.toggle('show-imp', on); });
+  bindToggle($('t-terms'), 'show-terms', D.showTerms, function (on) { root.classList.toggle('show-terms', on); });
+  bindToggle($('t-ss'), 'ss', D.showSectionSummaries, function (on) { document.querySelectorAll('.ss').forEach(function (n) { n.hidden = !on; }); });
+  (function () {
+    var b = $('t-quiz');
+    if (!D.showQuestions) { b.hidden = true; return; }
+    b.addEventListener('click', function () {
+      var on = b.getAttribute('aria-pressed') !== 'true';
+      b.setAttribute('aria-pressed', String(on)); root.classList.toggle('show-quiz', on);
+      if (!on) document.querySelectorAll('.s.src').forEach(function (n) { n.classList.remove('src'); });
+    });
+  })();
+
+  // ---- original text view
+  (function () {
+    var b = $('t-orig'), shell = $('shell');
+    b.addEventListener('click', function () {
+      var on = b.getAttribute('aria-pressed') !== 'true';
+      // keep the reader on the same sentence across the switch
+      var anchor = null;
+      var all = document.querySelectorAll('#units .s');
+      for (var i = 0; i < all.length; i++) { var r = all[i].getBoundingClientRect(); if (r.height && r.bottom > 90) { anchor = all[i]; break; } }
+      var offset = anchor ? anchor.getBoundingClientRect().top : 0;
+      closeToc();
+      shell.classList.toggle('orig', on);
+      b.setAttribute('aria-pressed', String(on));
+      b.textContent = on ? 'العودة إلى العرض الميسّر' : 'النص الأصلي';
+      $('eyebrow').textContent = on ? 'النص الأصلي كما كتبه الكاتب' : 'قراءة مُيسّرة';
+      if (anchor && anchor.getBoundingClientRect().height) window.scrollBy(0, anchor.getBoundingClientRect().top - offset);
+      else window.scrollTo(0, 0);
+    });
+  })();
+
+  // ---- term sheet
+  var lastFocus = null;
+  function openTerm(id) {
+    var t = termById[id]; if (!t) return;
+    $('sh-term').textContent = t.term;
+    $('sh-tr').textContent = t.translation || '';
+    $('sh-tr').hidden = !t.translation;
+    $('sh-meaning').textContent = t.meaning;
+    $('sh-expl').textContent = t.explanation;
+    $('sh-ex').textContent = t.example;
+    $('sh-count').textContent = 'ورد في النص ' + t.occurrences.length + (t.occurrences.length === 1 ? ' مرة' : ' مرات');
+    $('scrim').hidden = false; $('sheet').hidden = false; $('sh-close').focus();
+  }
+  function closeTerm() { $('scrim').hidden = true; $('sheet').hidden = true; if (lastFocus) lastFocus.focus(); }
+  root.addEventListener('click', function (e) {
+    var b = e.target.closest('.term'); if (!b || !root.classList.contains('show-terms')) return;
+    lastFocus = b; openTerm(b.dataset.term);
+  });
+  $('sh-close').addEventListener('click', closeTerm);
+  $('scrim').addEventListener('click', function () { if ($('toc').classList.contains('open')) closeToc(); else closeTerm(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('sheet').hidden) closeTerm(); });
+})();
+</script>
