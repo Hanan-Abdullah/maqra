@@ -1,0 +1,48 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  padding: 16px;
+  background: #f5f6f3;
+  color: #1f2522;
+  font-family: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif;
+}
+
+.status {
+  text-align: center;
+  margin-top: 40vh;
+  color: #56605b;
+}
+
+.card {
+  max-width: 460px;
+  margin: 30vh auto 0;
+  background: #ffffff;
+  border: 1px solid #dfe3df;
+  border-radius: 14px;
+  padding: 28px 24px;
+  text-align: center;
+}
+
+.brand {
+  margin: 0 0 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #2f5d50;
+}
+
+.card h1 {
+  margin: 0 0 10px;
+  font-size: 1.4rem;
+  line-height: 1.6;
+}
+
+.card p:last-child {
+  margin: 0;
+  color: #56605b;
+  line-height: 1.9;
+}
+
+.page {
+  max-width: 760px;
+  margin: 0 auto;
+}

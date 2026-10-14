@@ -1,0 +1,26 @@
+@switch (state()) {
+  @case ('loading') {
+    <p class="status" role="status">جارٍ تحميل النص…</p>
+  }
+  @case ('not-found') {
+    <main class="card">
+      <p class="brand">مَقرأ</p>
+      <h1>لم نجد هذا النص في مَقرأ</h1>
+      <p>قد يكون الرابط ناقصًا، تأكد أنك نسخته كاملًا.</p>
+    </main>
+  }
+  @case ('error') {
+    <main class="card">
+      <p class="brand">مَقرأ</p>
+      <h1>تعذّر الاتصال بمقرأ</h1>
+      <p>حاول مرة أخرى بعد قليل.</p>
+    </main>
+  }
+  @case ('ready') {
+    <!-- Temporary: proves the document arrived. The real page is built in the next pieces. -->
+    <main class="page">
+      <h1>{{ title() }}</h1>
+      <p>{{ doc()!.text.wordCount }} كلمة</p>
+    </main>
+  }
+}
