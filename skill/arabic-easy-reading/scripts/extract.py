@@ -14,6 +14,7 @@ Only the Python standard library is required; pdftotext / pdfplumber / pypdf,
 pandoc and LibreOffice are used when present.
 """
 import os
+import json
 import re
 import shutil
 import subprocess
@@ -238,6 +239,24 @@ def from_pdf(path):
     return text, reversed_order
 
 
+def write_meta(dst, src, ext):
+    """Notes the file name and type next to the extracted text (meta.json), for publish.js."""
+    meta_file = os.path.join(os.path.dirname(os.path.abspath(dst)), 'meta.json')
+    try:
+        with open(meta_file, encoding='utf-8') as f:
+            meta = json.load(f)
+    except (OSError, ValueError):
+        meta = {}
+    meta['source'] = {'type': 'file', 'fileName': os.path.basename(src)}
+    meta['fileType'] = ext.lstrip('.') or 'txt'
+    meta['reviewed'] = ext == '.pdf'
+    try:
+        with open(meta_file, 'w', encoding='utf-8') as f:
+            json.dump(meta, f, ensure_ascii=False, indent=2)
+    except OSError:
+        pass
+
+
 def main():
     if len(sys.argv) != 3:
         print('Usage: python3 scripts/extract.py <file> <output.txt>')
@@ -271,6 +290,7 @@ def main():
         reject('لم أجد نصًا عربيًا في الملف.')
     with open(dst, 'w', encoding='utf-8') as f:
         f.write(text)
+    write_meta(dst, src, ext)
     words = len(text.split())
     print(f'OK — {ext or "txt"} — {words} words{note}')
 

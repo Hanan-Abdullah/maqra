@@ -4,9 +4,12 @@
 'use strict';
 const fs = require('fs'), path = require('path');
 const Merger = require('./merge.js');
+const Meta = require('./meta.js');
 
 const [textFile, analysisFile, outDir] = process.argv.slice(2);
 if (!textFile || !analysisFile || !outDir) { console.error('Usage: node scripts/build.js input.txt analysis.json output-folder'); process.exit(1); }
+
+Meta.update(textFile, { buildAttempts: (Meta.read(textFile).buildAttempts || 0) + 1 });
 
 let raw = fs.readFileSync(analysisFile, 'utf8');
 const fence = raw.match(/```(?:json)?\s*([\s\S]*?)```/);
