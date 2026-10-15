@@ -1,18 +1,18 @@
 :host {
   display: block;
-  min-height: 100vh;
+  min-height: 50vh;
   padding: var(--spacing-xl);
 }
 
 .status {
   text-align: center;
-  margin-top: 40vh;
+  margin-top: 20vh;
   color: var(--text-primary-paragraph);
 }
 
 .card {
   max-width: 460px;
-  margin: 30vh auto 0;
+  margin: 6rem auto 0;
   background: var(--background-card);
   border: 1px solid var(--border-neutral-secondary);
   border-radius: var(--radius-8);

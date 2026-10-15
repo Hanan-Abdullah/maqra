@@ -1,0 +1,25 @@
+<footer>
+  <div class="container">
+    <div class="top">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">م</span><span class="name">مَقرأ</span></div>
+      <ul class="links">
+        <li><a routerLink="/">عن مَقرأ</a></li>
+        <li><a routerLink="/contact">تواصل معنا</a></li>
+      </ul>
+    </div>
+    <ul class="social" aria-label="حسابات المجمع">
+      @for (s of social; track s.url) {
+        <li>
+          @if (s.url.startsWith('http')) {
+            <a [href]="s.url" target="_blank" rel="noopener noreferrer" [title]="s.name" [attr.aria-label]="s.name + ' (يفتح في نافذة جديدة)'">
+              <dga-icon [name]="s.icon"></dga-icon>
+            </a>
+          } @else {
+            <a [href]="s.url" [title]="s.name" [attr.aria-label]="s.name"><dga-icon [name]="s.icon"></dga-icon></a>
+          }
+        </li>
+      }
+    </ul>
+    <p class="rights">جميع الحقوق محفوظة ل{{ academy.name }}</p>
+  </div>
+</footer>

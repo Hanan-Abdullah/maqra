@@ -1,0 +1,18 @@
+:host { display: block; }
+footer { background: var(--background-sa-flag); color: var(--text-oncolor-primary); }
+.container { padding-block: 2.5rem 1.5rem; }
+.top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border-oncolor-transparent-30); }
+.brand { display: flex; align-items: center; gap: var(--spacing-lg); }
+.brand .brand-mark { background: var(--text-oncolor-primary); color: var(--background-sa-flag); }
+.name { font-weight: 700; font-size: 1.25rem; line-height: 1.875rem; }
+.links { display: flex; flex-wrap: wrap; gap: var(--spacing-xl) 1.5rem; list-style: none; margin: 0; padding: 0; }
+.links a { color: var(--text-oncolor-primary); font-size: .875rem; line-height: 1.25rem; text-decoration: underline; text-underline-offset: 4px; display: inline-flex; align-items: center; min-height: 2.75rem; }
+.social { list-style: none; margin: 0; padding: 1.25rem 0 0; display: flex; flex-wrap: wrap; gap: var(--spacing-md); }
+.social a {
+  inline-size: 2.75rem; block-size: 2.75rem; border-radius: var(--radius-full); display: grid; place-items: center;
+  border: 1px solid var(--border-oncolor-transparent-30); color: var(--colors-base-white); transition: background .15s, color .15s;
+}
+.social a:hover { background: var(--colors-base-white); color: var(--background-sa-flag); }
+.social a:focus-visible, .links a:focus-visible { outline-color: var(--colors-base-white); }
+.social dga-icon { width: 1.25rem; height: 1.25rem; display: block; }
+.rights { margin: 0; padding-top: 1rem; font-size: .75rem; line-height: 1.125rem; color: var(--colors-alpha-alpha-white-80); }

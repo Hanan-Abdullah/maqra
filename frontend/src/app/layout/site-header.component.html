@@ -1,0 +1,28 @@
+<dga-second-nav-header variant="gray" role="region" aria-label="أدوات الإتاحة">
+  <dga-second-nav-header-content>
+    <dga-second-nav-header-item label="منصة القراءة الميسّرة للنصوص العربية">
+      <dga-icon name="book-open-01"></dga-icon>
+    </dga-second-nav-header-item>
+  </dga-second-nav-header-content>
+  <dga-second-nav-header-actions>
+    <dga-button variant="transparent" size="sm" [iconOnly]="true" icon-type="zoom-out-area"
+      label="تصغير النص" [disabled]="!zoom.canZoomOut()" (click)="zoom.zoomOut()"></dga-button>
+    <dga-button variant="transparent" size="sm" [iconOnly]="true" icon-type="zoom-in-area"
+      label="تكبير النص" [disabled]="!zoom.canZoomIn()" (click)="zoom.zoomIn()"></dga-button>
+    <dga-button variant="transparent" size="sm" [iconOnly]="true"
+      [iconType]="theme.theme() === 'dark' ? 'sun-03' : 'moon-02'"
+      [label]="theme.theme() === 'dark' ? 'الوضع الفاتح' : 'الوضع الداكن'" (click)="theme.toggle()"></dga-button>
+  </dga-second-nav-header-actions>
+</dga-second-nav-header>
+
+<dga-nav-header [divider]="true">
+  <dga-nav-header-main>
+    <div class="nav-row">
+      <a class="brand" routerLink="/" aria-label="مَقرأ — الصفحة الرئيسية">
+        <span class="brand-mark" aria-hidden="true">م</span>
+        <span class="brand-name">مَقرأ<span class="brand-tag">اقرأ أي نص عربي بيُسر</span></span>
+      </a>
+      <img class="org-logo" src="academy-logo.png" alt="مجمع الملك سلمان العالمي للغة العربية" width="188" height="51">
+    </div>
+  </dga-nav-header-main>
+</dga-nav-header>

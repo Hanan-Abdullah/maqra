@@ -20,11 +20,54 @@ strong, b { font-weight: 700; }
 [hidden] { display: none !important; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-/* page width: 1280px max; side padding 16px on phones, 32px from 960px, 80px from 1280px */
+/* page width as in the Platforms Code header: 1280px max, side padding 16px on phones and 32px from 960px */
 .container { max-width: 1280px; margin-inline: auto; padding-inline: 1rem; }
 @media (min-width: 960px) { .container { padding-inline: 2rem; } }
-@media (min-width: 1280px) { .container { padding-inline: 5rem; } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; }
 }
+
+/* ---------- shared page parts ---------- */
+
+/* skip link: first thing a keyboard user reaches */
+.skip {
+  position: absolute; inset-inline-start: var(--spacing-xl); top: -100px; z-index: 50;
+  background: var(--background-primary); color: var(--text-oncolor-primary);
+  padding: var(--spacing-md) var(--spacing-xl); border-radius: var(--radius-4); font-weight: 600; text-decoration: none;
+}
+.skip:focus { top: var(--spacing-md); }
+
+/* Maqra's mark: the letter م on a green square */
+.brand-mark {
+  inline-size: 2.5rem; block-size: 2.5rem; border-radius: var(--radius-8); display: grid; place-items: center; flex: none;
+  background: var(--background-primary); color: var(--text-oncolor-primary); font-weight: 700; font-size: 1.25rem; line-height: 1;
+}
+
+/* hero: deep SA green with a faint diamond lattice and the three brand colours as a bottom accent */
+.hero {
+  position: relative; overflow: hidden; color: var(--text-oncolor-primary);
+  background:
+    radial-gradient(circle at 12% 20%, var(--colors-primary-sa-flag-600-primary) 0, transparent 45%),
+    radial-gradient(circle at 85% 110%, var(--colors-primary-sa-flag-700) 0, transparent 50%),
+    var(--colors-primary-sa-flag-900);
+}
+.hero::before {
+  content: ""; position: absolute; inset: 0; opacity: .09; pointer-events: none;
+  background-image:
+    linear-gradient(45deg, var(--colors-base-white) 1px, transparent 1px),
+    linear-gradient(-45deg, var(--colors-base-white) 1px, transparent 1px);
+  background-size: 28px 28px;
+  -webkit-mask-image: linear-gradient(to left, #000 0%, transparent 70%); mask-image: linear-gradient(to left, #000 0%, transparent 70%);
+}
+.hero::after {
+  content: ""; position: absolute; inset-inline: 0; bottom: 0; height: 4px;
+  background: linear-gradient(to left, var(--colors-primary-sa-flag-400) 0 60%, var(--colors-secondary-gold-400) 60% 80%, var(--colors-tertiary-lavendar-300) 80%);
+}
+.hero .container { position: relative; padding-block: 3rem 5rem; }
+.hero.hero-sm .container { padding-block: 2.5rem 3rem; }
+.hero h1 {
+  margin: 0; max-width: 45rem; font-weight: 700; font-size: 2.25rem; line-height: 2.75rem; letter-spacing: -0.02em;
+  color: var(--text-oncolor-primary);
+}
+@media (min-width: 960px) { .hero h1 { font-size: 3rem; line-height: 3.75rem; } }

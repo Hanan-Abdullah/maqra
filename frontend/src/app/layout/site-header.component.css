@@ -1,0 +1,16 @@
+:host { display: block; }
+dga-nav-header-main { flex: 1; }
+.nav-row { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-xl); inline-size: 100%; max-inline-size: calc(1280px - 4rem); margin-inline: auto; min-block-size: 4.5rem; }
+/* on phones the gray bar keeps only the tools */
+@media (max-width: 599px) { dga-second-nav-header-content { display: none; } }
+.brand { display: flex; align-items: center; gap: var(--spacing-lg); text-decoration: none; color: var(--text-default); min-height: 2.75rem; }
+.brand-name { font-weight: 700; font-size: 1.25rem; line-height: 1.875rem; }
+.brand-tag { display: block; font-size: .75rem; line-height: 1.125rem; color: var(--text-primary-paragraph); font-weight: 400; }
+.org-logo { display: block; height: 3.5rem; width: auto; }
+/* the logo is drawn for a white background, so it sits on a white plate in dark mode */
+:host-context([data-theme=dark]) .org-logo { background: var(--colors-base-white); border-radius: var(--radius-4); padding: var(--spacing-xs) var(--spacing-md); height: 4rem; }
+@media (max-width: 599px) {
+  .org-logo { height: 2rem; }
+  :host-context([data-theme=dark]) .org-logo { height: 2.5rem; }
+  .brand-tag { display: none; }
+}
