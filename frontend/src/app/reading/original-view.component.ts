@@ -9,7 +9,7 @@ import { ReadingDocument, authorSections, titleBlock } from '../core/reading-doc
     <div class="layout" [class.solo]="!sections().length">
       @if (sections().length) {
         <div class="toc">
-          <dga-table-of-content [title]="tocTitle()" sub-title="المحتويات" [sections]="sections()" [rtl]="true"></dga-table-of-content>
+          <dga-table-of-content [title]="tocTitle()" [subTitle]="tocSub()" [sections]="sections()" [rtl]="true"></dga-table-of-content>
         </div>
       }
       <article class="doc">
@@ -40,4 +40,5 @@ export class OriginalViewComponent {
   });
   protected readonly sections = computed(() => authorSections(this.doc()).map((h) => ({ Name: h.text ?? '', Target: 'sec-' + h.id })));
   protected readonly tocTitle = computed(() => titleBlock(this.doc())?.text ?? 'المحتويات');
+  protected readonly tocSub = computed(() => (titleBlock(this.doc()) ? 'المحتويات' : undefined));
 }

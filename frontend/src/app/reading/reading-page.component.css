@@ -18,6 +18,17 @@
   box-shadow: var(--shadow-md); padding: var(--spacing-xs);
 }
 .switcher dga-tabs-v2 { display: block; }
+/* The library's tabs, drawn as in the approved design: three equal segments, the chosen one filled green.
+   overflow="scroll" keeps all three tabs in the row (the default hides the last one behind «…» on phones). */
+.switcher dga-tab { flex: 1 1 0; min-width: 0; }
+.switcher dga-tab::part(base) { border-radius: var(--radius-4); min-height: 2.75rem; padding: var(--spacing-md) var(--spacing-lg); gap: var(--spacing-md); }
+.switcher dga-tab::part(base)::after { display: none; }
+.switcher dga-tab[selected]::part(base) { background: var(--background-primary); color: var(--text-oncolor-primary); }
+.switcher dga-tab[selected]::part(label) { color: var(--text-oncolor-primary); }
+@media (max-width: 599px) {
+  .switcher dga-tab::part(base) { flex-direction: column; gap: var(--spacing-xs); padding: var(--spacing-md) var(--spacing-xs); white-space: normal; }
+  .switcher dga-tab::part(label) { font-size: .75rem; line-height: 1.125rem; text-align: center; }
+}
 
 .soon {
   margin-top: 2.5rem; padding: 3rem 1.5rem; text-align: center; color: var(--text-primary-paragraph);

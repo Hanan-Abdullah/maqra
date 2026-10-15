@@ -24,7 +24,7 @@
     <app-reading-hero [doc]="doc()!" [mode]="mode()" />
     <div class="container">
       <div class="switcher">
-        <dga-tabs-v2 size="lg" [value]="mode()" accessible-label="نمط العرض" (dgaChange)="onTabChange($event)">
+        <dga-tabs-v2 size="lg" overflow="scroll" [value]="mode()" accessible-label="نمط العرض" (dgaChange)="onTabChange($event)">
           @for (m of modes; track m.id) {
             <dga-tab [value]="m.id" [label]="m.label" [icon]="m.icon"></dga-tab>
           }
@@ -33,7 +33,7 @@
 
       @switch (mode()) {
         @case ('original') { <app-original-view [doc]="doc()!" /> }
-        @case ('easy') { <app-easy-view [doc]="doc()!" (termSelected)="drawer.open($event.termId)" /> }
+        @case ('easy') { <app-easy-view [doc]="doc()!" [docId]="id()" (termSelected)="drawer.open($event.termId)" /> }
         @default {
           <div class="soon">
             <h2>{{ modes[modeIndex()].label }}</h2>

@@ -18,6 +18,7 @@ import { defineCustomElement as defineTabs } from '@platformscode/core/component
 import { defineCustomElement as defineTab } from '@platformscode/core/components/dga-tab.js';
 import { defineCustomElement as defineTableOfContent } from '@platformscode/core/components/dga-table-of-content.js';
 import { defineCustomElement as defineSwitch } from '@platformscode/core/components/dga-switch.js';
+import { defineCustomElement as defineRadio } from '@platformscode/core/components/dga-radio-button.js';
 import { defineCustomElement as defineDrawer } from '@platformscode/core/components/dga-drawer-v2.js';
 import { defineCustomElement as defineDrawerHeader } from '@platformscode/core/components/dga-drawer-header.js';
 import { defineCustomElement as defineDrawerBody } from '@platformscode/core/components/dga-drawer-body.js';
@@ -28,5 +29,5 @@ export function registerPlatformsCode(): void {
   setAssetPath(document.baseURI);
   [defineButton, defineIcon, defineSecondNav, defineSecondNavActions, defineSecondNavContent, defineSecondNavItem,
     defineNavHeader, defineNavHeaderMain, defineNavHeaderActions, defineTabs, defineTab, defineTableOfContent, defineSwitch,
-    defineDrawer, defineDrawerHeader, defineDrawerBody, defineDrawerFooter].forEach((define) => define());
+    defineDrawer, defineDrawerHeader, defineDrawerBody, defineDrawerFooter, defineRadio].forEach((define) => define());
 }

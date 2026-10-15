@@ -1,0 +1,43 @@
+<div class="quiz t-quiz" role="group" [attr.aria-labelledby]="groupName() + '-q'">
+  <p class="quiz-label"><dga-icon name="quiz-01"></dga-icon>اختبر فهمك</p>
+  <p class="quiz-q" [id]="groupName() + '-q'">{{ question().text }}</p>
+
+  <div class="quiz-opts" role="radiogroup" [attr.aria-labelledby]="groupName() + '-q'">
+    @for (o of question().options; track $index; let i = $index) {
+      <div class="quiz-opt" [class]="'quiz-opt ' + stateOf(i)">
+        <span class="qo-l" aria-hidden="true">{{ letters[i] ?? i + 1 }}</span>
+        @if (!checked()) {
+          <dga-radio-button color="brand" [name]="groupName()" [value]="'' + i" [label]="o"
+            [checked]="picked() === i" (change)="pick(i)"></dga-radio-button>
+        } @else {
+          <!-- once checked, the options become plain text (the library's disabled radios fade the text too much) -->
+          <span class="qo-t">{{ o }}</span>
+        }
+        @if (stateOf(i) === 'right') { <span class="sr-only">(الإجابة الصحيحة)</span> }
+        @if (stateOf(i) === 'wrong') { <span class="sr-only">(اختيارك، غير صحيح)</span> }
+      </div>
+    }
+  </div>
+
+  @if (!checked()) {
+    <div class="quiz-check">
+      <dga-button variant="primary-brand" size="md" label="تحقق من الإجابة" lead-icon-type="tick-02"
+        [disabled]="picked() === null" (click)="check()"></dga-button>
+      @if (picked() === null) { <span class="hint">اختر إجابة أولًا</span> }
+    </div>
+  } @else {
+    <div class="quiz-fb" [class.ok]="right()" [class.no]="!right()" tabindex="-1" role="status">
+      <dga-icon [name]="right() ? 'checkmark-circle-02' : 'cancel-circle'"></dga-icon>
+      <div>
+        <b>{{ right() ? 'إجابة صحيحة' : 'إجابة غير صحيحة' }}</b>
+        @if (question().explanation) { <p>{{ question().explanation }}</p> }
+      </div>
+    </div>
+    <div class="quiz-actions">
+      @if (question().sources.length) {
+        <dga-button variant="transparent" size="md" label="أين ذُكر هذا في النص؟" lead-icon-type="search-01" (click)="where()"></dga-button>
+      }
+      <dga-button variant="transparent" size="md" label="أعد المحاولة" lead-icon-type="refresh" (click)="retry()"></dga-button>
+    </div>
+  }
+</div>

@@ -1,10 +1,39 @@
 <!-- one line on purpose: whitespace between the parts would split words (e.g. «ب» + «التعلّم») -->
-<ng-template #sentence let-id="id"><span [class]="'s ' + levelOf(id)" [attr.data-id]="id">@if (on().imp && levelOf(id) === 'primary') {<span class="sr-only">مهم: </span>}@for (p of partsOf(id); track $index) {@if (p.termId) {<button type="button" class="term" [class.first]="p.first" aria-haspopup="dialog" [disabled]="!on().terms" (click)="openTerm(p.termId, $event)">{{ p.text }}</button>} @else {<ng-container>{{ p.text }}</ng-container>}}</span></ng-template>
+<ng-template #sentence let-id="id"><span [class]="'s ' + levelOf(id)" [class.src]="isSource(id)" [attr.data-id]="id">@if (on().imp && levelOf(id) === 'primary') {<span class="sr-only">مهم: </span>}@for (p of partsOf(id); track $index) {@if (p.termId) {<button type="button" class="term" [class.first]="p.first" aria-haspopup="dialog" [disabled]="!on().terms" (click)="openTerm(p.termId, $event)">{{ p.text }}</button>} @else {<ng-container>{{ p.text }}</ng-container>}}</span></ng-template>
 
 <div class="easy" [class.show-imp]="on().imp" [class.show-terms]="on().terms">
   <div class="layout" [class.solo]="!many()">
     @if (many()) {
-      <div class="toc"><dga-table-of-content [title]="tocTitle()" sub-title="وحدات النص" [sections]="tocSections()" [rtl]="true"></dga-table-of-content></div>
+      <!-- the units list: a card beside the text on wide screens, folded behind a button on narrower ones.
+           Built here rather than with dga-table-of-content: that one's links cannot be reached with the keyboard,
+           and it cannot show which units are read. -->
+      <nav class="toc" aria-label="وحدات النص">
+        <div class="toc-card">
+          @if (wide()) {
+            <div class="toc-head">
+              @if (tocSub()) { <span class="toc-sub">{{ tocSub() }}</span> }
+              <span class="toc-title">{{ tocTitle() }}</span>
+            </div>
+          } @else {
+            <button type="button" class="toc-head toc-toggle" [attr.aria-expanded]="tocOpen()" aria-controls="easy-toc" (click)="tocOpen.set(!tocOpen())">
+              <span><span class="toc-sub">وحدات النص · قرأت {{ doneCount() }} من {{ units().length }}</span><span class="toc-title">{{ tocTitle() }}</span></span>
+              <dga-icon name="arrow-down-01" [class.up]="tocOpen()"></dga-icon>
+            </button>
+          }
+          @if (wide() || tocOpen()) {
+            <ol id="easy-toc" class="toc-list">
+              @for (u of units(); track u.n) {
+                <li>
+                  <a [href]="'#unit-' + u.n" [class.done]="isDone(u.n)" [attr.aria-current]="activeUnit() === u.n ? 'true' : null" (click)="tocGo(u.n, $event)">
+                    <span class="toc-mark" aria-hidden="true">@if (isDone(u.n)) {<dga-icon name="tick-02"></dga-icon>} @else {{{ u.n }}}</span>
+                    <span class="toc-text">{{ u.title }}@if (isDone(u.n)) {<span class="sr-only"> (مقروءة)</span>}</span>
+                  </a>
+                </li>
+              }
+            </ol>
+          }
+        </div>
+      </nav>
     }
 
     <div class="article">
@@ -26,13 +55,14 @@
         }
       </section>
 
-      @if (available().terms || available().imp || available().ss) {
+      @if (available().terms || available().imp || available().ss || available().quiz || many()) {
         <div class="reading-bar" role="group" aria-label="أدوات القراءة">
           <!-- dga-switch reads `checked` before Angular sets it, so its internal state (isChecked) is set too -->
           <div class="switches">
             @if (available().terms) { <dga-switch label="المصطلحات" [checked]="prefs().terms" [isChecked]="prefs().terms" (switchChange)="setPref('terms', $event)"></dga-switch> }
             @if (available().imp) { <dga-switch label="تمييز المهم" [checked]="prefs().imp" [isChecked]="prefs().imp" (switchChange)="setPref('imp', $event)"></dga-switch> }
             @if (available().ss) { <dga-switch label="ملخصات الوحدات" [checked]="prefs().ss" [isChecked]="prefs().ss" (switchChange)="setPref('ss', $event)"></dga-switch> }
+            @if (available().quiz) { <dga-switch label="اختبر فهمي" [checked]="prefs().quiz" [isChecked]="prefs().quiz" (switchChange)="setQuiz($event)"></dga-switch> }
           </div>
           @if (on().terms || on().imp) {
             <p class="legend" aria-label="دليل الألوان">
@@ -40,20 +70,45 @@
               @if (on().imp) { <span><span class="smp-imp">النص المظلَّل</span>جملة مهمة</span> }
             </p>
           }
+          @if (many()) {
+            <div class="unit-progress">
+              <span class="up-text" aria-live="polite">{{ doneCount() === units().length ? 'أنهيت كل الوحدات' : 'قرأت ' + doneCount() + ' من ' + units().length }}</span>
+              <div class="up-track" role="progressbar" aria-label="تقدم القراءة" aria-valuemin="0" [attr.aria-valuemax]="units().length" [attr.aria-valuenow]="doneCount()">
+                <span class="up-fill" [style.inline-size.%]="(100 * doneCount()) / units().length"></span>
+              </div>
+              <dga-button variant="transparent" size="sm" [label]="anyCollapsed() ? 'فتح كل الوحدات' : 'طي كل الوحدات'"
+                [leadIconType]="anyCollapsed() ? 'arrow-down-01' : 'arrow-up-01'" (click)="toggleAll()"></dga-button>
+            </div>
+          }
         </div>
       }
 
       <div class="units">
         @for (u of units(); track u.n) {
-          <section class="unit" [id]="'unit-' + u.n" tabindex="-1" [attr.aria-labelledby]="'unit-h-' + u.n">
-            <span class="unit-n">{{ many() ? 'الوحدة ' + u.n + ' من ' + units().length : 'النص' }}</span>
-            <h2 class="unit-title" [id]="'unit-h-' + u.n">{{ u.title }}</h2>
+          <section class="unit" [id]="'unit-' + u.n" tabindex="-1" [attr.aria-labelledby]="'unit-h-' + u.n"
+            [class.collapsed]="isCollapsed(u.n)" [class.is-done]="isDone(u.n)">
+            <div class="unit-head">
+              <div class="unit-tb">
+                <div class="unit-meta">
+                  <span class="unit-n">{{ many() ? 'الوحدة ' + u.n + ' من ' + units().length : 'النص' }}</span>
+                  @if (isDone(u.n)) { <span class="done-tag"><dga-icon name="checkmark-circle-02"></dga-icon>مقروءة</span> }
+                </div>
+                <h2 class="unit-title" [id]="'unit-h-' + u.n">{{ u.title }}</h2>
+              </div>
+              @if (many() && (isDone(u.n) || isCollapsed(u.n))) {
+                <button type="button" class="unit-toggle" [attr.aria-expanded]="!isCollapsed(u.n)" [attr.aria-controls]="'unit-body-' + u.n"
+                  [attr.aria-label]="(isCollapsed(u.n) ? 'فتح الوحدة: ' : 'طي الوحدة: ') + u.title" (click)="setCollapsed(u.n, !isCollapsed(u.n))">
+                  <dga-icon name="arrow-down-01" [class.up]="!isCollapsed(u.n)"></dga-icon>
+                </button>
+              }
+            </div>
             @if (showUnitSummary(u) && on().ss) {
               <div class="unit-summary t-ss">
                 <p class="us-label"><dga-icon name="note-01"></dga-icon>ملخص الوحدة</p>
                 <p class="us-text">{{ u.summary }}</p>
               </div>
             }
+            <div class="unit-body" [id]="'unit-body-' + u.n" [hidden]="isCollapsed(u.n)">
             <div class="text">
               @for (b of blocksOf(u); track b.id) {
                 @switch (b.type) {
@@ -70,6 +125,19 @@
                   }
                 }
               }
+            </div>
+            @if (on().quiz && u.question && u.question.show !== false) {
+              <app-quiz [question]="u.question" [unit]="u.n" (sourcesShown)="setSources(u.n, $event)" (whereAsked)="goToSentence($event)" />
+            }
+            @if (many()) {
+              <div class="unit-end">
+                @if (u.n < units().length) {
+                  <dga-button variant="primary-brand" size="md" label="انتهيت، الوحدة التالية" trail-icon-type="arrow-left-02" (click)="finish(u.n)"></dga-button>
+                } @else {
+                  <dga-button variant="primary-brand" size="md" label="انتهيت من القراءة" trail-icon-type="checkmark-circle-02" (click)="finish(u.n)"></dga-button>
+                }
+              </div>
+            }
             </div>
           </section>
         }
