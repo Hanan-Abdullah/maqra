@@ -314,6 +314,15 @@ body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(
     if (pos < text.length) span.appendChild(document.createTextNode(text.slice(pos)));
     return span;
   }
+  // A unit whose title is the author's own heading shows it once, in the unit head, not again in the text.
+  function norm(t) { return String(t || '').replace(/\s+/g, ' ').trim(); }
+  function repeatedHeading(u) {
+    for (var i = 0; i < u.blocks.length; i++) {
+      var b = blockById[u.blocks[i]]; if (!b || b === titleBlock) continue;
+      return b.type === 'heading' && norm(b.text) === norm(u.title) ? b : null;
+    }
+    return null;
+  }
   function renderBlock(b) {
     if (b.type === 'heading') { var hh = el(b === titleBlock ? 'span' : 'h3', null, b === titleBlock ? '' : b.text); hh.id = 'blk-' + b.id; return hh; }
     if (b.type === 'list') {
@@ -356,7 +365,8 @@ body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(
       sec.appendChild(box);
     }
     var text = el('div', 'text'); text.id = 'unit-text-' + u.n;
-    u.blocks.forEach(function (id) { if (blockById[id] && blockById[id] !== titleBlock) text.appendChild(renderBlock(blockById[id])); });
+    var dup = repeatedHeading(u);
+    u.blocks.forEach(function (id) { if (blockById[id] && blockById[id] !== titleBlock && blockById[id] !== dup) text.appendChild(renderBlock(blockById[id])); });
     sec.appendChild(text);
     if (u.question && u.question.show) sec.appendChild(renderQuiz(u));
     if (FOLDING) {
@@ -443,7 +453,8 @@ body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(
       b.appendChild(el('span', 'toc-title', u.title));
       b.addEventListener('click', function () { closeToc(); goToUnit(u.n); });
       li.appendChild(b);
-      var heads = u.blocks.map(function (id) { return blockById[id]; }).filter(function (bl) { return bl && bl.type === 'heading' && bl !== titleBlock; });
+      var dupT = repeatedHeading(u);
+      var heads = u.blocks.map(function (id) { return blockById[id]; }).filter(function (bl) { return bl && bl.type === 'heading' && bl !== titleBlock && bl !== dupT; });
       if (heads.length) {
         var sub = el('ol', 'toc-sub');
         heads.forEach(function (hb) {

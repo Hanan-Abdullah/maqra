@@ -90,20 +90,51 @@ To browse the data: MongoDB Compass at `mongodb://127.0.0.1:27018`.
 
 - **Backend:** Node.js. It uses `segmenter.js` and `merge.js` as they are, never rewrites them.
 - **Database:** MongoDB. The document is stored in the same shape as the skill's `document.json`, together with the original text.
-- **Frontend:** Angular. Its built files are served by the backend from the same container.
+- **Frontend:** Angular, with the official Platforms Code web components. Its built files are served by the backend from the same container.
 - **Deployment:** two containers. `maqra` for the backend and pages, `maqra-db` for MongoDB.
 - **Analysis in the Claude chat, not through the API:** the skill sends the result to the backend. Every user must allow Maqra's domain in their Claude settings; the likely solution at deployment is a connector.
 - **Repository:** in the developer's personal GitHub account for now; it moves to the organisation account (`ksaa-nlp`) before deployment on the organisation's server.
 - **Development machine:** macOS with Docker. The production server is Ubuntu with Podman, and Nginx maps the domain to the container.
 - **Reserved ports on the development machine:** 8061 and 6060 are used by another project; do not use them.
 
+## Platforms Code (كود المنصات) compliance
+
+Maqra will run on a government entity's server, so the interface must follow the Digital Government Authority's unified design system, **Platforms Code** (https://design.dga.gov.sa). The DGA evaluates platforms against a 56-point checklist, kept in `docs/platforms-code-checklist.xlsx`.
+
+**Decisions:**
+- **Official library:** `@platformscode/core` (Stencil web components, published by the same maintainers as the official `platformscode-new-react`). Used directly in Angular as custom elements. Do **not** use `platformscode-new-angular` or other third-party wrappers. Pin the exact version (0.0.53); upgrade only after testing, because it is still pre-1.0.
+- **Tokens:** colours, spacing and radius come only from the library's `dist/core/core.css` (light theme in `:root`, dark theme in `[data-theme=dark]`). Never hard-code colours or spacing, and never modify or replace a token.
+- **Font:** IBM Plex Sans Arabic for everything, including the reading text (bundled with the library). Sizes from the typography tokens: display-md 36/44, display-sm 30/38, display-xs 24/32, text-xl 20/30, text-lg 18/28, text-md 16/24, text-sm 14/20, text-xs 12/18. Reading text uses text-xl.
+- **Icons:** from the official icon set (`@platformscode/icons`), not text symbols such as ✓ ✗ ☰ ×.
+- **Dark mode:** supported, using the official dark tokens only.
+- **Accessibility:** WCAG AA contrast (4.5:1 for text under 24px), touch targets at least 44×44px, real `<button>` elements, visible focus, Esc closes overlays, focus stays inside open overlays, text resizable to 200% (use `rem`). Importance highlighting must not rely on colour alone: add a non-colour cue and visually hidden text for screen readers.
+
+**Our components mapped to Platforms Code components (checklist number):**
+- "Finish" and quiz action buttons → Button (12)
+- Toolbar on/off toggles → Switch (23)
+- Term card → Modal / Drawer (19)
+- Quiz options → Radio button (22)
+- Folding reading units → Accordion (15)
+- Summary and unit cards → Card (28)
+- Loading state → Loading (46)
+
+**Applies later:** Footer (27), Navigation header (29) and Digital stamp (11) once the organisation confirms its requirements and logo; a user feedback mechanism (40), which makes the `feedback` collection required; a visible privacy notice on the page (41).
+
+**Not applicable for now** (Maqra is a single reading page): page templates (7–10), file upload (20), table (35), date picker (36), sitemap (37).
+
+**UX principles (42–56)** apply to every piece: consistency, clear error handling, visual hierarchy, few steps.
+
 ## Remaining work
 
-1. The Angular reading page with all features of the current page, then a redesign of the visual identity, then the `events` reading log.
+1. The Angular reading page with all features of the current page, built with the Platforms Code library and tokens (see above), then the `events` reading log.
 2. Before deployment: a shared secret between the skill and the backend, request rate limiting, the `maqra` container, a database password, and deletion of a text at its owner's request.
    - **Privacy:** users are told that their text is stored **before** they use the skill (in its description or the message it is distributed with), not in every reply. The wording will be written together with the developer. Check the organisation's policy and the Saudi Personal Data Protection Law.
 3. Deployment: move the repository to the organisation, coordinate with the server administrator (subdomain and Nginx), and change `config.json`.
 4. Later: related topics, text classification, accounts, raising the 1500-word limit, recording the extraction method.
+
+**Open questions to come back to:**
+- **Unit title vs the author's heading:** when a unit starts with an author's heading, Claude's unit title is often a near copy of it (sample `acad`: «الأسس الجزيئية لنشوء المقاومة» above the author's «الأسس الجزيئية لنشوء المقاومة البكتيرية»). Proposed fix: a rule in the units file to reuse the author's heading as the unit title in that case, and the page skips repeating it. Needs the developer's approval (rule change, version bump).
+- **Crowded margin notes:** in «النص والحواشي», a unit with many terms (sample `acad`, 18 terms) pushes its notes down beside the next unit. Proposed fix: shorten notes to the term and its translation only when the margin is crowded.
 
 ## Working rules
 
