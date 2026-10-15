@@ -1,11 +1,11 @@
 import { Component, CUSTOM_ELEMENTS_SCHEMA, inject } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
-import { ACADEMY, SOCIAL } from '../core/academy';
+import { ACADEMY } from '../core/academy';
 
 /** The academy's map, found by name until its exact coordinates arrive. */
 const MAP_QUERY = 'مجمع الملك سلمان العالمي للغة العربية، حي الورود، الرياض';
 
-/** «تواصل معنا»: the academy's contact details, its accounts and its location. */
+/** «تواصل معنا»: the academy's contact details and its location. */
 @Component({
   selector: 'app-contact-page',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -32,21 +32,6 @@ const MAP_QUERY = 'مجمع الملك سلمان العالمي للغة الع
             <p>@for (line of academy.address; track line) { {{ line }}@if (!$last) {<br>} }</p>
           </li>
         </ul>
-
-        <section class="ct-block" aria-labelledby="ct-follow">
-          <h2 id="ct-follow">تابعنا</h2>
-          <ul class="social">
-            @for (s of social; track s.url) {
-              <li>
-                @if (s.url.startsWith('http')) {
-                  <a [href]="s.url" target="_blank" rel="noopener noreferrer" [attr.aria-label]="s.name + ' (يفتح في نافذة جديدة)'" [title]="s.name"><dga-icon [name]="s.icon"></dga-icon></a>
-                } @else {
-                  <a [href]="s.url" [attr.aria-label]="s.name" [title]="s.name"><dga-icon [name]="s.icon"></dga-icon></a>
-                }
-              </li>
-            }
-          </ul>
-        </section>
 
         <section class="ct-block" aria-labelledby="ct-loc">
           <h2 id="ct-loc">موقع المجمع</h2>
@@ -75,24 +60,16 @@ const MAP_QUERY = 'مجمع الملك سلمان العالمي للغة الع
     .ct-block h2 { margin-bottom: var(--spacing-lg); }
     .ct-card a, .ct-card p { margin: 0; font-size: 1.125rem; line-height: 1.75rem; color: var(--text-primary-paragraph); }
     .ct-card a { color: var(--text-primary); font-weight: 600; text-underline-offset: 5px; justify-self: start; min-height: 2.75rem; display: inline-flex; align-items: center; }
-    .social { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--spacing-md); }
-    .social a {
-      inline-size: 2.75rem; block-size: 2.75rem; border-radius: var(--radius-full); display: grid; place-items: center;
-      border: 1px solid var(--border-neutral-primary); color: var(--text-default); transition: background .15s, color .15s, border-color .15s;
-    }
-    .social a:hover { background: var(--background-primary); border-color: transparent; color: var(--text-oncolor-primary); }
-    .social dga-icon { width: 1.25rem; height: 1.25rem; display: block; }
     .map-frame {
       border-radius: var(--radius-8); overflow: hidden; border: 1px solid var(--border-neutral-secondary);
       background: var(--background-neutral-100); aspect-ratio: 16 / 7; min-height: 18rem;
     }
     .map-frame iframe { display: block; inline-size: 100%; block-size: 100%; border: 0; }
     @media (max-width: 599px) { .map-frame { aspect-ratio: 4 / 3; } }
-    @media (prefers-reduced-motion: reduce) { .social a { transition: none; } }`,
+`,
 })
 export class ContactPageComponent {
   protected readonly academy = ACADEMY;
-  protected readonly social = SOCIAL;
   // a fixed Google Maps embed address built here (not from user input), so it is safe to trust
   protected readonly mapUrl = inject(DomSanitizer).bypassSecurityTrustResourceUrl(
     `https://www.google.com/maps?q=${encodeURIComponent(MAP_QUERY)}&hl=ar&z=15&output=embed`,
