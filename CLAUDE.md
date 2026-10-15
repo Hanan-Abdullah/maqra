@@ -40,7 +40,8 @@ The analysis happens in the Claude chat, **not** through the API, so the backend
   - `scripts/publish.js`: sends the text and analysis to the backend and prints `LINK:` or `PUBLISH_FAILED:`. It sends with `curl` because Claude's sandbox routes outside connections through a proxy (`HTTPS_PROXY`) that Node's `fetch` ignores.
   - `scripts/meta.js`: writes `meta.json` next to `input.txt`: start time (prepare.js), number of builds (build.js), file name and type (extract.py).
   - `templates/reading-page.html`: the current reading page. It is the reference for the Angular page's design and behaviour.
-- `samples/`: test texts with their analyses, for trying things without a Claude chat. Their analyses are older and have no comprehension questions.
+- `samples/`: test texts with their analyses, for trying things without a Claude chat. Most analyses are older and have no comprehension questions; `short` (92 words, one unit) is current and has them.
+- `design/`: the approved design of the reading page as one self-contained HTML prototype (`page.html` + `build.js`), the reference for the Angular page. See `design/README.md`.
 - `compose.yaml`: the local MongoDB container `maqra-db` on `127.0.0.1:27018`.
 - `backend/`: Node.js (Express 5 and mongodb 7, requires Node 20.19 or newer).
   - `src/server.js`: connects to the database and starts the server. If the connection fails it exits with a clear message (on the server, the container restarts it).
@@ -49,7 +50,7 @@ The analysis happens in the Claude chat, **not** through the API, so the backend
   - `src/record.js`: the shape of the stored record.
   - `src/pages.js`: the temporary reading page and the "not found" page.
   - `.env.example`: required settings (PORT, MONGO_URL, MONGO_DB, PUBLIC_URL). `.env` is never committed.
-- `frontend/`: (later) Angular, the reading page.
+- `frontend/`: Angular, the reading page (being built from `design/`).
 - `docs/CLAUDE.ar.md`: Arabic copy of this guide, local only (in `.gitignore`).
 
 ## Backend
@@ -124,17 +125,70 @@ Maqra will run on a government entity's server, so the interface must follow the
 
 **UX principles (42–56)** apply to every piece: consistency, clear error handling, visual hierarchy, few steps.
 
+## Reading page design (`design/`)
+
+Approved with the developer. The Angular page must reproduce it.
+
+**Page parts:**
+- Gray accessibility bar (zoom out/in, light/dark), white header (Maqra mark and name, academy logo), green hero, mode switcher, the mode panel, "was this page helpful?" (yes/no), analysis date, green footer.
+- Hero:
+  - mode badge; share, print and report buttons
+  - title
+  - one line describing the mode
+  - number cards: text length (words) always; reading units only when there is more than one unit; terms only when there are terms.
+
+**Three reading modes on one page, switched by tabs:**
+1. **«النص الأصلي»:** the author's text only, no analysis. Author headings feed the contents list; without headings the text is a single centred column.
+2. **«العرض الميسّر»:**
+   - The summary («الخلاصة») with key points that jump to their unit.
+   - A sticky toolbar of switches, in this order: «المصطلحات», «تمييز المهم», «ملخصات الوحدات», «اختبر فهمي».
+   - A colour legend, and reading progress «قرأت X من Y» with open/close all.
+   - Unit cards: unit summary, then the text, then the quiz, then the «انتهيت، الوحدة التالية» button (marks the unit read and folds it).
+   - Terms open a side panel (a bottom sheet on phones).
+3. **«النص والحواشي»** (annotated, magazine style):
+   - The summary and a numbered list «الأفكار الرئيسية» linking to units.
+   - A sticky bar of chips: «المصطلحات», «تمييز المهم», «ملخصات الوحدات», «اختبر فهمي». On is shown by a tick, off is gray, with no strike-through.
+   - Each unit: an eight-point star divider, a big faint number, the title, the first two words in bold (default text colour, never green), the text, and the quiz.
+   - Margin notes are cards with an accent bar facing the text:
+     - Wide screens (≥1280px) have two margins: unit summaries on the right; terms on the left, moving to the right when the left is taken at that height. A term card still pushed more than about 96px from its word is shortened to the term and its translation.
+     - 960–1279px has one margin on the left.
+     - Phones have no margins: summaries sit under the unit title, and terms open the side panel.
+   - Notes glide in as their paragraph reaches the screen; leader lines appear only on hover or focus.
+   - A reading thread with one dot per unit fills as the reader scrolls.
+   - Clicking a term (word or card) opens the same side panel as in the easy mode.
+
+**Colours, the same in every mode:** terms green, importance gold, unit summaries blue, comprehension questions purple. Quiz sources are highlighted purple; the "correct answer" box stays success green. Importance looks the same in both analysis modes: primary sentences have a gold background with an underline, secondary sentences are faded to 30%.
+
+**Follow the display settings of the document** (`display.showImportance`, `showSectionSummaries`, `showTerms`, `showQuestions`, a unit's `showSummary`) in both analysis modes. A feature the text does not have is left out, not shown disabled. The line under the title is built from what is actually shown (e.g. «النص مع شرح للمصطلحات وسؤال لاختبار الفهم.»).
+
+**A unit whose title equals its leading author heading** (rules v8) shows the heading once, in the unit head, not again in the text or the contents list.
+
+**Other pages (same header and footer):**
+- «تواصل معنا» (`#contact`, linked from the footer): breadcrumb, then cards for email `info@ksaa.gov.sa`, phone `+966 11 520 7777` and address «حي الورود، الرياض 12251، المملكة العربية السعودية».
+  - Then «تابعنا» with the academy's accounts: X `KSGAFAL`, Instagram `ksgafal`, Facebook `KSGAFAL`, YouTube `@ksgafal`, LinkedIn `ksgafal`, the WhatsApp channel, and email. The footer shows the same icons.
+  - Then «موقع المجمع» with an embedded Google map.
+- «عن مَقرأ» (`#about`): four paragraphs approved by the developer (see `design/page.html`).
+
+**Report dialog («إبلاغ», hero button):**
+- Reports a mistake in the analysis.
+- Fields, all required and marked with a red asterisk: name, email (validated, with an error shown when the field is left), report type (a dropdown: شرح مصطلح، ملخص وحدة، الخلاصة أو الأفكار الرئيسية، تمييز المهم، سؤال «اختبر فهمي»، أخرى), and message.
+- «إرسال البلاغ» stays disabled until all fields are valid.
+- The text link, current mode and unit are attached automatically, and the dialog says so.
+- It is stored in the `feedback` collection.
+
+**Share and print:** share uses the system share sheet and falls back to copying the link. Embedded viewers may block printing, so the page says to open it in a browser.
+
 ## Remaining work
 
-1. The Angular reading page with all features of the current page, built with the Platforms Code library and tokens (see above), then the `events` reading log.
+1. The Angular reading page, reproducing `design/` with the Platforms Code library and tokens, mode by mode («النص الأصلي», then «العرض الميسّر», then «النص والحواشي»), then the contact and about pages. Then the `feedback` collection (reports and "was this page helpful?") and the `events` reading log.
 2. Before deployment: a shared secret between the skill and the backend, request rate limiting, the `maqra` container, a database password, and deletion of a text at its owner's request.
-   - **Privacy:** users are told that their text is stored **before** they use the skill (in its description or the message it is distributed with), not in every reply. The wording will be written together with the developer. Check the organisation's policy and the Saudi Personal Data Protection Law.
-3. Deployment: move the repository to the organisation, coordinate with the server administrator (subdomain and Nginx), and change `config.json`.
+   - **Privacy:** users are told that their text is stored **before** they use the skill (in its description or the message it is distributed with), not in every reply. The report dialog collects a name and email, so a privacy notice on the page is required before launch. The wording will be written together with the developer. Check the organisation's policy and the Saudi Personal Data Protection Law.
+3. Deployment: move the repository to the organisation, coordinate with the server administrator (subdomain and Nginx), and change `config.json`. Ask the organisation about header, footer and digital stamp requirements.
 4. Later: related topics, text classification, accounts, raising the 1500-word limit, recording the extraction method.
 
-**Open questions to come back to:**
-- **Unit title vs the author's heading:** when a unit starts with an author's heading, Claude's unit title is often a near copy of it (sample `acad`: «الأسس الجزيئية لنشوء المقاومة» above the author's «الأسس الجزيئية لنشوء المقاومة البكتيرية»). Proposed fix: a rule in the units file to reuse the author's heading as the unit title in that case, and the page skips repeating it. Needs the developer's approval (rule change, version bump).
-- **Crowded margin notes:** in «النص والحواشي», a unit with many terms (sample `acad`, 18 terms) pushes its notes down beside the next unit. Proposed fix: shorten notes to the term and its translation only when the margin is crowded.
+**Waiting on the developer:** the academy's map coordinates, to pin the map exactly (it now searches by name).
+
+**Optional design touches, postponed:** the current unit's title kept visible in the margin; leader lines drawn with motion.
 
 ## Working rules
 

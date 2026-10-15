@@ -11,6 +11,9 @@ dist/
 out/
 .angular/
 
+# Written by the skill scripts next to a sample when building from it
+samples/meta.json
+
 # OS / editor
 .DS_Store
 .vscode/*
