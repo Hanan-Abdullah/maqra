@@ -15,6 +15,7 @@ import { EasyViewComponent } from './easy-view.component';
 import { TermDrawerComponent } from './term-drawer.component';
 import { MarginViewComponent } from './margin-view.component';
 import { ReportDialogComponent } from './report-dialog.component';
+import { LastTextService } from '../core/last-text.service';
 
 type PageState = 'loading' | 'ready' | 'not-found' | 'error';
 const MODE_KEY = 'maqra:mode';
@@ -42,6 +43,7 @@ export class ReadingPageComponent implements OnInit {
   private readonly pageTitle = inject(Title);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly lastText = inject(LastTextService);
 
   private readonly modeParam = toSignal(this.route.queryParamMap.pipe(map((q) => q.get('mode'))), { initialValue: null });
   readonly mode = computed<Mode>(() => {
@@ -65,6 +67,8 @@ export class ReadingPageComponent implements OnInit {
     effect(() => {
       const doc = this.doc();
       if (doc) this.pageTitle.setTitle(`${documentTitle(doc, this.mode() === 'original')} · مَقرأ`);
+      // the other pages lead back to this text, in this mode
+      if (doc) this.lastText.remember({ id: this.id(), title: documentTitle(doc), mode: this.mode() });
     });
   }
 

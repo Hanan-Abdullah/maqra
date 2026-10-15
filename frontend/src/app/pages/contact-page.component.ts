@@ -1,3 +1,4 @@
+import { BreadcrumbsComponent } from '../layout/breadcrumbs.component';
 import { Component, CUSTOM_ELEMENTS_SCHEMA, inject } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { ACADEMY } from '../core/academy';
@@ -7,11 +8,12 @@ const MAP_QUERY = 'مجمع الملك سلمان العالمي للغة الع
 
 /** «تواصل معنا»: the academy's contact details and its location. */
 @Component({
+  imports: [BreadcrumbsComponent],
   selector: 'app-contact-page',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   template: `
     <section class="hero hero-sm" aria-labelledby="contact-title">
-      <div class="container"><h1 id="contact-title">تواصل معنا</h1></div>
+      <div class="container"><app-breadcrumbs current="تواصل معنا" /><h1 id="contact-title">تواصل معنا</h1></div>
     </section>
     <div class="container">
       <div class="contact">

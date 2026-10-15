@@ -1,11 +1,13 @@
+import { BreadcrumbsComponent } from '../layout/breadcrumbs.component';
 import { Component } from '@angular/core';
 
 /** «عن مَقرأ»: also the home page, so someone opening the site without a text link learns what it is. */
 @Component({
+  imports: [BreadcrumbsComponent],
   selector: 'app-about-page',
   template: `
     <section class="hero hero-sm" aria-labelledby="about-title">
-      <div class="container"><h1 id="about-title">عن مَقرأ</h1></div>
+      <div class="container"><app-breadcrumbs current="عن مَقرأ" /><h1 id="about-title">عن مَقرأ</h1></div>
     </section>
     <div class="container">
       <article class="about">
