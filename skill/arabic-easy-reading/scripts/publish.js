@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const Meta = require('./meta.js');
 
-const SKILL_VERSION = '1.2';
+const SKILL_VERSION = '1.3';
 const TIMEOUT_MS = 20000;
 
 const args = process.argv.slice(2);

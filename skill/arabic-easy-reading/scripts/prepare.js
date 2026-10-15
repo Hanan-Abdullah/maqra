@@ -5,7 +5,9 @@
 const fs = require('fs');
 const Segmenter = require('./segmenter.js');
 const Meta = require('./meta.js');
-const MAX_WORDS = 1500; // safe limit tested so far; raise after longer tests
+// No upper limit on length (the developer's decision, 15 Oct 2026). Very long texts may make the
+// analysis too long for one reply: test long texts and set a limit here if they fail.
+const MAX_WORDS = Infinity;
 
 const file = process.argv[2];
 if (!file) { console.error('Usage: node scripts/prepare.js input.txt'); process.exit(1); }

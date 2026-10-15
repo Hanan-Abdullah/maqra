@@ -5,7 +5,6 @@
 ## What the project is
 
 Maqra turns any Arabic text into an easy-reading page with:
-
 - an overall summary and key points
 - reading units with titles and summaries
 - terms with their meaning, explanation and example
@@ -57,7 +56,6 @@ The analysis happens in the Claude chat, **not** through the API, so the backend
 ## Backend
 
 **Routes:**
-
 - `POST /api/documents`: receives `{ text, analysis, source, processing }`. Validates with `merge.js`, and also rejects an analysis without reading units or without a summary. Stores it and returns `{ id, url, warnings }`. Errors: 400 for a malformed request, 422 for an invalid analysis.
 - `GET /api/documents/:id`: returns only the display document (`document`), no internal data.
 - `POST /api/feedback`: what readers send from the page (`backend/src/feedback.js` checks it). `kind: report` needs `documentId` (an existing text), `name`, `email`, `type` (`term`, `unit-summary`, `summary`, `importance`, `question`, `other`), `message`; `mode` and `unit` are attached by the page. `kind: helpful` needs `helpful` (true/false) and `page` (the path), with `documentId` and `mode` on a reading page. 400 for invalid input, 404 for a report about an unknown text, 201 when saved.
@@ -67,7 +65,6 @@ The analysis happens in the Claude chat, **not** through the API, so the backend
 **Id:** 10 random `base64url` characters. The link is not stored; it is built from `PUBLIC_URL` + `/read/` + id.
 
 **`documents` record:**
-
 - `_id`, `title` (the author's title, otherwise the first unit's title), `wordCount`
 - `source`: `{ type: paste | file | url, fileName?, url? }`
 - `versions`: `{ skill, schema, segmenter, rules }`
@@ -110,7 +107,6 @@ To browse the data: MongoDB Compass at `mongodb://127.0.0.1:27018`.
 Maqra will run on a government entity's server, so the interface must follow the Digital Government Authority's unified design system, **Platforms Code** (https://design.dga.gov.sa). The DGA evaluates platforms against a 56-point checklist, kept in `docs/platforms-code-checklist.xlsx`.
 
 **Decisions:**
-
 - **Official library:** `@platformscode/core` (Stencil web components, published by the same maintainers as the official `platformscode-new-react`). Used directly in Angular as custom elements. Do **not** use `platformscode-new-angular` or other third-party wrappers. Pin the exact version (0.0.53); upgrade only after testing, because it is still pre-1.0.
 - **Tokens:** colours, spacing and radius come only from the library's `dist/core/core.css` (light theme in `:root`, dark theme in `[data-theme=dark]`). Never hard-code colours or spacing, and never modify or replace a token.
 - **Font:** IBM Plex Sans Arabic for everything, including the reading text (bundled with the library). Sizes from the typography tokens: display-md 36/44, display-sm 30/38, display-xs 24/32, text-xl 20/30, text-lg 18/28, text-md 16/24, text-sm 14/20, text-xs 12/18. Reading text uses text-xl.
@@ -119,7 +115,6 @@ Maqra will run on a government entity's server, so the interface must follow the
 - **Accessibility:** WCAG AA contrast (4.5:1 for text under 24px), touch targets at least 44×44px, real `<button>` elements, visible focus, Esc closes overlays, focus stays inside open overlays, text resizable to 200% (use `rem`). Importance highlighting must not rely on colour alone: add a non-colour cue and visually hidden text for screen readers.
 
 **Our components mapped to Platforms Code components (checklist number):**
-
 - "Finish" and quiz action buttons → Button (12)
 - Toolbar on/off toggles → Switch (23)
 - Term card → Modal / Drawer (19)
@@ -139,7 +134,6 @@ Maqra will run on a government entity's server, so the interface must follow the
 Approved with the developer. The Angular page must reproduce it.
 
 **Page parts:**
-
 - Gray accessibility bar (zoom out/in, light/dark), white header (Maqra mark and name, academy logo), green hero, mode switcher, the mode panel, "was this page helpful?" (yes/no), analysis date, green footer.
 - Hero:
   - mode badge; share, print and report buttons
@@ -148,7 +142,6 @@ Approved with the developer. The Angular page must reproduce it.
   - number cards: text length (words) always; reading units only when there is more than one unit; terms only when there are terms.
 
 **Three reading modes on one page, switched by tabs:**
-
 1. **«النص الأصلي»:** the author's text only, no analysis. Author headings feed the contents list; without headings the text is a single centred column.
 2. **«العرض الميسّر»:**
    - The summary («الخلاصة») with key points that jump to their unit.
@@ -175,14 +168,12 @@ Approved with the developer. The Angular page must reproduce it.
 **A unit whose title equals its leading author heading** (rules v8) shows the heading once, in the unit head, not again in the text or the contents list.
 
 **Other pages (same header and footer):**
-
-- «تواصل معنا» (`#contact`, linked from the footer): breadcrumb, then cards for email `arai@ksaa.gov.sa`, phone `+966 11 520 7777` and address «حي الورود، الرياض 12251، المملكة العربية السعودية».
+- «تواصل معنا» (`#contact`, linked from the footer): breadcrumb, then cards for email `info@ksaa.gov.sa`, phone `+966 11 520 7777` and address «حي الورود، الرياض 12251، المملكة العربية السعودية».
   - Then «تابعنا» with the academy's accounts: X `KSGAFAL`, Instagram `ksgafal`, Facebook `KSGAFAL`, YouTube `@ksgafal`, LinkedIn `ksgafal`, the WhatsApp channel, and email. The footer shows the same icons.
   - Then «موقع المجمع» with an embedded Google map.
 - «عن مَقرأ» (`#about`): four paragraphs approved by the developer (see `design/page.html`).
 
 **Report dialog («إبلاغ», hero button):**
-
 - Reports a mistake in the analysis.
 - Fields, all required and marked with a red asterisk: name, email (validated, with an error shown when the field is left), report type (a dropdown: شرح مصطلح، ملخص وحدة، الخلاصة أو الأفكار الرئيسية، تمييز المهم، سؤال «اختبر فهمي»، أخرى), and message.
 - «إرسال البلاغ» stays disabled until all fields are valid.
@@ -198,7 +189,6 @@ Angular 19, standalone components and signals. Built piece by piece from `design
 **Routes:** `''` → «عن مَقرأ» (the home page, `about` redirects to it), `read/:id` → the reading page, `**` → not found. Scroll goes to the top on every navigation.
 
 **Reading page:**
-
 - The mode is in the address, `?mode=original|easy|margin`, and remembered on the device (`maqra:mode`); the default is `easy`. Changing the mode navigates (merge), so Back returns to the previous mode.
 - What a text shows follows its analysis (`display`, `showSummary`, `question.show`): a missing feature is hidden, never shown disabled. `hasUnitSummaries()` / `hasQuestions()` in `core/reading-document.ts` decide whether a switch appears at all (short units hide their summary and question).
 - A term's "first appearance" is counted after the text's title (the title is in the green band).
@@ -206,7 +196,6 @@ Angular 19, standalone components and signals. Built piece by piece from `design
 - Files: `reading/reading-page` (states, hero, mode tabs, term drawer), `original-view`, `easy-view` (summary, switches, units list, unit cards, progress), `margin-view` (article, notes, leader lines, reading thread), `quiz` (shared by both modes), `term-drawer`, `text-parts.ts` (sentences split around terms).
 
 **Platforms Code library in Angular (0.0.53) — what we learned:**
-
 - Each component is registered on its own in `core/platforms-code.ts` (`defineCustomElement` from `@platformscode/core/components/<name>.js`). `setAssetPath` is imported from the runtime chunk `dist/components/p-BfuyVjJ2.js`: importing the components index pulls about 1 MB (charts). The chunk name is tied to the pinned version.
 - Icons: only the icons used are copied by `angular.json` (a glob of `*-stroke.svg` names) to `assets/svg`. **Add a new icon's name to that list**, or it shows nothing (a 404 in the console).
 - Static attributes must be kebab-case (`icon-type`, `lead-icon-type`, `sub-title`); camelCase attributes do not reach the props. Property bindings (`[iconOnly]`, `[leadIconType]`) are fine.
@@ -226,7 +215,7 @@ Angular 19, standalone components and signals. Built piece by piece from `design
 2. Before deployment: a shared secret between the skill and the backend, request rate limiting, the `maqra` container, a database password, and deletion of a text at its owner's request.
    - **Privacy:** users are told that their text is stored **before** they use the skill (in its description or the message it is distributed with), not in every reply. The report dialog collects a name and email, so a privacy notice on the page is required before launch. The wording will be written together with the developer. Check the organisation's policy and the Saudi Personal Data Protection Law.
 3. Deployment: move the repository to the organisation, coordinate with the server administrator (subdomain and Nginx), and change `config.json`. Ask the organisation about header, footer and digital stamp requirements.
-4. Later: related topics, text classification, accounts, raising the 1500-word limit, recording the extraction method.
+4. Later: related topics, text classification, accounts, recording the extraction method. The word limit was removed in skill 1.3 (`prepare.js`); test long texts and set a limit there if the analysis fails.
 
 **Waiting on the developer:** the academy's map coordinates, to pin the map exactly (it now searches by name).
 
