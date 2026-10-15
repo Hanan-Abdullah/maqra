@@ -33,7 +33,7 @@
 
       @switch (mode()) {
         @case ('original') { <app-original-view [doc]="doc()!" /> }
-        @case ('easy') { <app-easy-view [doc]="doc()!" /> }
+        @case ('easy') { <app-easy-view [doc]="doc()!" (termSelected)="drawer.open($event.termId)" /> }
         @default {
           <div class="soon">
             <h2>{{ modes[modeIndex()].label }}</h2>
@@ -46,5 +46,6 @@
         <p class="updated"><dga-icon name="calendar-04"></dga-icon>تاريخ تحليل النص: {{ analysedOn() }}</p>
       }
     </div>
+    <app-term-drawer #drawer [doc]="doc()!" />
   }
 }

@@ -54,7 +54,7 @@
                 "input": "public"
               },
               {
-                "glob": "{book-open-01,zoom-in-area,zoom-out-area,moon-02,sun-03,layers-01,note-01,sparkles,thumbs-up,thumbs-down,calendar-04,sticky-note-01,cancel-01,arrow-up-02,share-08,printer,tick-02,arrow-down-01,arrow-left-02,quiz-01,search-01,information-circle,translation,idea-01,note-edit,star,refresh,checkmark-circle-02,mail-01,call-02,location-01,new-twitter,instagram,facebook-01,youtube,linkedin-01,whatsapp,mail-send-01,file-01,flag-02,alert-circle}-stroke.svg",
+                "glob": "{book-open-01,zoom-in-area,zoom-out-area,moon-02,sun-03,layers-01,note-01,sparkles,thumbs-up,thumbs-down,calendar-04,sticky-note-01,cancel-01,arrow-up-02,share-08,printer,tick-02,arrow-down-01,arrow-left-02,quiz-01,search-01,information-circle,translation,idea-01,note-edit,star,refresh,checkmark-circle-02,mail-01,call-02,location-01,new-twitter,instagram,facebook-01,youtube,linkedin-01,whatsapp,mail-send-01,file-01,flag-02,alert-circle,more-horizontal}-stroke.svg",
                 "input": "node_modules/@platformscode/icons/dist/svg",
                 "output": "assets/svg"
               }
@@ -70,7 +70,7 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "1MB",
+                  "maximumWarning": "1.2MB",
                   "maximumError": "1.5MB"
                 },
                 {
