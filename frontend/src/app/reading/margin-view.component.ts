@@ -148,6 +148,10 @@ export class MarginViewComponent implements AfterViewInit {
     const schedule = () => { if (!frame) frame = requestAnimationFrame(() => { frame = 0; this.layoutNotes(); }); };
     // text heights change with the window, the fonts, an answered question: lay the notes out again
     addEventListener('resize', schedule);
+    let tick = 0;
+    const onScroll = () => { if (!tick) tick = requestAnimationFrame(() => { tick = 0; this.updateThread(); }); };
+    addEventListener('scroll', onScroll, { passive: true });
+    this.destroyRef.onDestroy(() => { removeEventListener('scroll', onScroll); cancelAnimationFrame(tick); });
     const units = new ResizeObserver(schedule);
     this.host.nativeElement.querySelectorAll('.m-unit, .m-open').forEach((el) => units.observe(el));
     document.fonts?.ready.then(schedule);
@@ -166,6 +170,7 @@ export class MarginViewComponent implements AfterViewInit {
       notes.forEach((n) => (n.style.top = ''));
       sheet.style.minHeight = '';
       this.leaders.set([]);
+      this.placeThread();
       return;
     }
     const two = matchMedia('(min-width: 1280px)').matches;
@@ -202,6 +207,35 @@ export class MarginViewComponent implements AfterViewInit {
     sheet.style.minHeight = Math.max(bottoms.start, bottoms.end) + 40 + 'px';
     this.sheetSize.set({ w: sr.width, h: sheet.scrollHeight });
     this.leaders.set(lines);
+    this.placeThread();
+  }
+
+  // ---- the reading thread: a line beside the text that fills as the reader goes, one dot per unit
+  protected readonly thread = signal<{ top: number; height: number; dots: number[] } | null>(null);
+  protected readonly threadFill = signal(0);
+  protected readonly threadCurrent = signal(0);
+
+  private placeThread(): void {
+    if (!this.many()) return;
+    const units = Array.from(this.host.nativeElement.querySelectorAll<HTMLElement>('.m-unit'));
+    if (!units.length) return;
+    const top = units[0].offsetTop + 8;
+    const last = units[units.length - 1];
+    const height = last.offsetTop + last.offsetHeight - top;
+    this.thread.set({ top, height, dots: units.map((u) => u.offsetTop + 8 - top) });
+    this.updateThread();
+  }
+
+  private updateThread(): void {
+    const t = this.thread();
+    const el = this.host.nativeElement.querySelector<HTMLElement>('.thread');
+    if (!t || !el) return;
+    const r = el.getBoundingClientRect();
+    const line = innerHeight * 0.35;
+    this.threadFill.set(Math.max(0, Math.min(1, (line - r.top) / r.height)));
+    let current = 0;
+    t.dots.forEach((y, i) => { if (r.top + y <= line) current = i + 1; });
+    this.threadCurrent.set(current);
   }
 
   // notes glide in as their paragraph reaches the screen

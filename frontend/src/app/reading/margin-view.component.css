@@ -106,6 +106,28 @@ ul.plain { list-style: disc; } ol.plain { list-style: decimal; }
 .mnote.t-term:hover { translate: 0 -2px; box-shadow: var(--shadow-md); }
 .mnote.t-term:hover .mn-open dga-icon { translate: -3px 0; }
 
+/* reading thread */
+.thread { position: absolute; inset-inline-start: .625rem; inline-size: 2px; border-radius: 2px; background: var(--border-neutral-secondary); pointer-events: none; }
+@media (min-width: 600px) { .thread { inset-inline-start: 1.125rem; } }
+@media (min-width: 1280px) { .thread { inset-inline-start: 15.75rem; } }
+.th-fill {
+  position: absolute; inset: 0; border-radius: inherit; transform-origin: top; transform: scaleY(0);
+  background: linear-gradient(var(--colors-primary-sa-flag-400), var(--colors-primary-sa-flag-600-primary)); transition: transform .12s linear;
+}
+.th-dots { list-style: none; margin: 0; padding: 0; }
+.th-dots li { position: absolute; inset-inline-start: 50%; transform: translate(50%, -50%); }
+.th-dot {
+  pointer-events: auto; position: relative; display: block; inline-size: .75rem; block-size: .75rem; padding: 0; border-radius: var(--radius-full);
+  border: 2px solid var(--border-neutral-primary); background: var(--background-card); cursor: pointer; transition: transform .2s, background .2s, border-color .2s;
+}
+.th-dot::before { content: ""; position: absolute; inset: -16px; }
+.th-dot.passed { background: var(--colors-primary-sa-flag-600-primary); border-color: var(--colors-primary-sa-flag-600-primary); }
+.th-dot.current { border-color: var(--colors-secondary-gold-500); background: var(--colors-secondary-gold-400); transform: scale(1.35); box-shadow: 0 0 0 4px var(--colors-secondary-gold-100); }
+:host-context([data-theme=dark]) .th-dot.current { box-shadow: 0 0 0 4px var(--colors-secondary-gold-950); }
+.th-dot:hover { transform: scale(1.35); }
+/* on phones and tablets the dots only show the way; the units are reached from the key ideas */
+@media (max-width: 959px) { .th-dot { pointer-events: none; } }
+
 /* compact term card (pushed far from its word): the term and its translation, the rest is one click away */
 .mnote.compact .mn-body { display: none; }
 .mnote.compact .mn-top { margin-bottom: var(--spacing-xs); }
@@ -156,10 +178,10 @@ ul.plain { list-style: disc; } ol.plain { list-style: decimal; }
 }
 
 @media print {
-  .reading-bar, .leaders { display: none !important; }
+  .reading-bar, .leaders, .thread { display: none !important; }
   .mnote { position: static !important; opacity: 1 !important; transform: none !important; margin: 0 0 12px; }
   .m-orn { display: none !important; }
   .show-imp .ms.primary { background: none; box-shadow: inset 0 -1px 0 #000; }
   .mnote { border-inline-start: 2px solid #000; }
 }
-@media (prefers-reduced-motion: reduce) { .mnote, .mi-go, .ld { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .mnote, .mi-go, .ld, .th-fill, .th-dot { transition: none; } }

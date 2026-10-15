@@ -82,8 +82,9 @@ The numbers in `stats` and `textProfile` are computed by the backend from the do
 1. `docker compose up -d` (database).
 2. `cd backend && npm start`.
 3. `ngrok http --url=turret-each-tipping.ngrok-free.dev 3010` (a fixed public URL so Claude can reach the backend).
-4. While testing from Claude, `backend/.env` has `PUBLIC_URL=https://turret-each-tipping.ngrok-free.dev`.
-5. In Claude's settings: Allow network egress on, domain allowlist "Package managers only", plus `turret-each-tipping.ngrok-free.dev` in additional allowed domains.
+4. The Angular page: `cd frontend && npm start`, then `http://localhost:4200/read/<id>` (it proxies `/api` to the backend on 3010). Restart it after any change to `angular.json`.
+5. While testing from Claude, `backend/.env` has `PUBLIC_URL=https://turret-each-tipping.ngrok-free.dev`.
+6. In Claude's settings: Allow network egress on, domain allowlist "Package managers only", plus `turret-each-tipping.ngrok-free.dev` in additional allowed domains.
 
 To browse the data: MongoDB Compass at `mongodb://127.0.0.1:27018`.
 
@@ -178,9 +179,34 @@ Approved with the developer. The Angular page must reproduce it.
 
 **Share and print:** share uses the system share sheet and falls back to copying the link. Embedded viewers may block printing, so the page says to open it in a browser.
 
+## Angular frontend (`frontend/`)
+
+Angular 19, standalone components and signals. Built piece by piece from `design/`.
+
+**Routes:** `''` → «عن مَقرأ» (the home page, `about` redirects to it), `read/:id` → the reading page, `**` → not found. Scroll goes to the top on every navigation.
+
+**Reading page:**
+- The mode is in the address, `?mode=original|easy|margin`, and remembered on the device (`maqra:mode`); the default is `easy`. Changing the mode navigates (merge), so Back returns to the previous mode.
+- What a text shows follows its analysis (`display`, `showSummary`, `question.show`): a missing feature is hidden, never shown disabled. `hasUnitSummaries()` / `hasQuestions()` in `core/reading-document.ts` decide whether a switch appears at all (short units hide their summary and question).
+- A term's "first appearance" is counted after the text's title (the title is in the green band).
+- Device storage: `maqra:theme`, `maqra:zoom`, `maqra:mode`, `maqra:prefs` (easy switches), `maqra:prefs:margin` (margin switches), `maqra:done:<id>` (units marked read).
+- Files: `reading/reading-page` (states, hero, mode tabs, term drawer), `original-view`, `easy-view` (summary, switches, units list, unit cards, progress), `margin-view` (article, notes, leader lines, reading thread), `quiz` (shared by both modes), `term-drawer`, `text-parts.ts` (sentences split around terms).
+
+**Platforms Code library in Angular (0.0.53) — what we learned:**
+- Each component is registered on its own in `core/platforms-code.ts` (`defineCustomElement` from `@platformscode/core/components/<name>.js`). `setAssetPath` is imported from the runtime chunk `dist/components/p-BfuyVjJ2.js`: importing the components index pulls about 1 MB (charts). The chunk name is tied to the pinned version.
+- Icons: only the icons used are copied by `angular.json` (a glob of `*-stroke.svg` names) to `assets/svg`. **Add a new icon's name to that list**, or it shows nothing (a 404 in the console).
+- Static attributes must be kebab-case (`icon-type`, `lead-icon-type`, `sub-title`); camelCase attributes do not reach the props. Property bindings (`[iconOnly]`, `[leadIconType]`) are fine.
+- `dga-switch` reports changes only through an `onChange` callback; Angular forbids binding `on*` properties in development (the page stops rendering). Use `SwitchChangeDirective`: `<dga-switch (switchChange)="...">`. Bind both `[checked]` and `[isChecked]` (it reads `checked` before Angular sets it).
+- `dga-radio-button` is light DOM: its native `change` event reaches the host. Disabled radios fade the text, so a checked quiz shows its options as plain text.
+- Mode tabs: `dga-tabs-v2` + `dga-tab` (not `dga-content-switcher`: no ARIA state, no initial value, unreadable in dark mode). `overflow="scroll"`, otherwise phones hide the last tab behind «…». Styled as filled segments through `::part(base)` and the reflected `selected` attribute.
+- Term panel: `dga-drawer-v2` (backdrop, Esc, focus trap and focus return built in); `placement` end on wide screens, bottom on phones.
+- Not used: `dga-table-of-content` in the easy view (its links are not keyboard reachable and cannot show read units), so the units list is our own, built with the tokens. `dga-chip` (one colour for all) — the margin view uses the same switches as the easy view.
+
+**Testing:** run `ng serve` (development mode) as well as a build: some library errors appear only in development.
+
 ## Remaining work
 
-1. The Angular reading page, reproducing `design/` with the Platforms Code library and tokens, mode by mode («النص الأصلي», then «العرض الميسّر», then «النص والحواشي»), then the contact and about pages. Then the `feedback` collection (reports and "was this page helpful?") and the `events` reading log.
+1. The Angular page: the three reading modes are done. Next: the contact page (`/contact`, map) and the report dialog, then the `feedback` collection (reports and "was this page helpful?") and the `events` reading log; then the backend serves the built Angular files in place of the skill's template.
 2. Before deployment: a shared secret between the skill and the backend, request rate limiting, the `maqra` container, a database password, and deletion of a text at its owner's request.
    - **Privacy:** users are told that their text is stored **before** they use the skill (in its description or the message it is distributed with), not in every reply. The report dialog collects a name and email, so a privacy notice on the page is required before launch. The wording will be written together with the developer. Check the organisation's policy and the Saudi Personal Data Protection Law.
 3. Deployment: move the repository to the organisation, coordinate with the server administrator (subdomain and Nginx), and change `config.json`. Ask the organisation about header, footer and digital stamp requirements.

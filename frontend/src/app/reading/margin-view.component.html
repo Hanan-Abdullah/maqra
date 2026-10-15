@@ -107,5 +107,20 @@
         }
       </section>
     }
+
+    @if (many() && thread(); as t) {
+      <div class="thread" [style.top.px]="t.top" [style.height.px]="t.height">
+        <span class="th-fill" [style.transform]="'scaleY(' + threadFill() + ')'"></span>
+        <ol class="th-dots" aria-label="وحدات النص">
+          @for (v of unitViews(); track v.unit.n; let i = $index) {
+            <li [style.top.px]="t.dots[i]">
+              <button type="button" class="th-dot" [class.passed]="i + 1 < threadCurrent()" [class.current]="i + 1 === threadCurrent()"
+                [attr.aria-current]="i + 1 === threadCurrent() ? 'step' : null" [attr.aria-label]="'الوحدة ' + v.unit.n + ': ' + v.unit.title"
+                [title]="v.unit.title" (click)="goToUnit(v.unit.n)"></button>
+            </li>
+          }
+        </ol>
+      </div>
+    }
   </div>
 </div>
