@@ -1,0 +1,111 @@
+<!-- one line on purpose: whitespace between the parts would split words -->
+<ng-template #sentence let-id="id"><span [class]="'ms ' + levelOf(id)" [class.src]="isSource(id)" [attr.data-id]="id">@if (on().imp && levelOf(id) === 'primary') {<span class="sr-only">مهم: </span>}@for (p of partsOf(id); track $index) {@if (p.termId && on().terms) {<button type="button" class="mterm" [class.linked]="isLinked('term-' + p.n)" [attr.data-key]="'term-' + p.n" aria-haspopup="dialog" [attr.aria-describedby]="'note-term-' + p.n" (click)="openTerm(p.termId, $event)">{{ p.text }}</button>} @else if (p.lead) {<span class="m-leadin">{{ p.text }}</span>} @else {<ng-container>{{ p.text }}</ng-container>}}</span></ng-template>
+
+<ng-template #notesTpl let-notes="notes">
+  @if (notes.length) {
+    <div class="mnotes">
+      @for (nt of notes; track nt.type + nt.n) {
+        @if (nt.type === 'ss') {
+          @if (on().ss) {
+            <aside class="mnote t-ss" [class.linked]="isLinked('ss-' + nt.n)" [id]="'note-ss-' + nt.n" [attr.data-key]="'ss-' + nt.n" aria-label="ملخص الوحدة">
+              <div class="mn-top"><span class="mn-ico"><dga-icon name="note-01"></dga-icon></span><span class="mn-kind">ملخص الوحدة {{ nt.n }}</span></div>
+              <p class="mn-body">{{ unitViews()[nt.n - 1].unit.summary }}</p>
+            </aside>
+          }
+        } @else if (on().terms) {
+          <aside class="mnote t-term" [class.linked]="isLinked('term-' + nt.n)" [id]="'note-term-' + nt.n" [attr.data-key]="'term-' + nt.n" [attr.aria-label]="'مصطلح: ' + termOf(nt.termId).term">
+            <div class="mn-top"><span class="mn-ico"><dga-icon name="translation"></dga-icon></span><span class="mn-kind">مصطلح</span></div>
+            <p class="mn-h">{{ termOf(nt.termId).term }}</p>
+            @if (termOf(nt.termId).translation) { <p class="mn-tr" dir="ltr">{{ termOf(nt.termId).translation }}</p> }
+            <p class="mn-body">{{ termOf(nt.termId).meaning }}</p>
+            <button type="button" class="mn-open" aria-haspopup="dialog" (click)="openTerm(nt.termId, $event)">
+              الشرح والمثال<span class="sr-only">: {{ termOf(nt.termId).term }}</span><dga-icon name="arrow-left-02"></dga-icon>
+            </button>
+          </aside>
+        }
+      }
+    </div>
+  }
+</ng-template>
+
+<div class="mag" [class.show-imp]="on().imp" [class.show-terms]="on().terms"
+  (mouseover)="link($event, true)" (mouseout)="link($event, false)" (focusin)="link($event, true)" (focusout)="link($event, false)">
+  @if (available().terms || available().imp || available().ss || available().quiz) {
+    <div class="reading-bar" role="group" aria-label="أدوات القراءة">
+      <div class="switches">
+        @if (available().terms) { <dga-switch label="المصطلحات" [checked]="prefs().terms" [isChecked]="prefs().terms" (switchChange)="setPref('terms', $event)"></dga-switch> }
+        @if (available().imp) { <dga-switch label="تمييز المهم" [checked]="prefs().imp" [isChecked]="prefs().imp" (switchChange)="setPref('imp', $event)"></dga-switch> }
+        @if (available().ss) { <dga-switch label="ملخصات الوحدات" [checked]="prefs().ss" [isChecked]="prefs().ss" (switchChange)="setPref('ss', $event)"></dga-switch> }
+        @if (available().quiz) { <dga-switch label="اختبر فهمي" [checked]="prefs().quiz" [isChecked]="prefs().quiz" (switchChange)="setPref('quiz', $event)"></dga-switch> }
+      </div>
+    </div>
+  }
+
+  <div class="msheet">
+    <svg class="leaders" aria-hidden="true" [attr.width]="sheetSize().w" [attr.height]="sheetSize().h" [attr.viewBox]="'0 0 ' + sheetSize().w + ' ' + sheetSize().h">
+      @for (l of leaders(); track l.key) {
+        <path [attr.class]="'ld ' + l.type" [class.linked]="isLinked(l.key)" [attr.d]="l.d"></path>
+        <circle [attr.class]="'ldot ' + l.type" [class.linked]="isLinked(l.key)" [attr.cx]="l.x2" [attr.cy]="l.y2" r="3"></circle>
+      }
+    </svg>
+    <header class="m-open">
+      <p class="m-kicker"><dga-icon name="book-open-01"></dga-icon>الخلاصة</p>
+      <p class="m-stand">{{ doc().analysis.summary }}</p>
+      @if (showKeyPoints()) {
+        <nav class="m-index" aria-labelledby="m-kp-h">
+          <h2 class="m-index-h" id="m-kp-h">الأفكار الرئيسية</h2>
+          <ol>
+            @for (kp of doc().analysis.keyPoints; track $index) {
+              <li>
+                <a [href]="'#mu-' + kp.unit" [attr.aria-label]="kp.text + ' — انتقل إلى الوحدة ' + kp.unit" (click)="goToUnit(kp.unit, $event)">
+                  <span class="mi-n">{{ pad($index + 1) }}</span><span class="mi-t">{{ kp.text }}</span><dga-icon class="mi-go" name="arrow-left-02"></dga-icon>
+                </a>
+              </li>
+            }
+          </ol>
+        </nav>
+      }
+    </header>
+
+    @for (v of unitViews(); track v.unit.n) {
+      <section class="m-unit" [id]="'mu-' + v.unit.n" tabindex="-1" [attr.aria-labelledby]="'mu-h-' + v.unit.n">
+        @if (v.unit.n > 1) {
+          <!-- a small eight-point star between units, echoing the lattice of the page header -->
+          <div class="m-orn" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="30" height="30"><rect x="5" y="5" width="14" height="14" rx="1.5"/><rect x="5" y="5" width="14" height="14" rx="1.5" transform="rotate(45 12 12)"/><circle cx="12" cy="12" r="2.2"/></svg>
+          </div>
+        }
+        <div class="mrow">
+          <header class="m-uhead">
+            @if (many()) { <span class="m-num" aria-hidden="true">{{ pad(v.unit.n) }}</span> }
+            <h2 class="m-title" [id]="'mu-h-' + v.unit.n" [attr.data-key]="'ss-' + v.unit.n" [class.linked]="isLinked('ss-' + v.unit.n)">{{ v.unit.title }}</h2>
+          </header>
+          <ng-container *ngTemplateOutlet="notesTpl; context: { notes: v.headNotes }" />
+        </div>
+
+        @for (r of v.rows; track r.block.id) {
+          <div class="mrow">
+            @switch (r.kind) {
+              @case ('heading') { <h3 class="m-sub">{{ r.block.text }}</h3> }
+              @case ('list') {
+                @if (r.block.ordered) {
+                  <ol class="plain">@for (it of r.block.items; track it.id) { <li><ng-container *ngTemplateOutlet="sentence; context: { id: it.id }" /></li> }</ol>
+                } @else {
+                  <ul class="plain">@for (it of r.block.items; track it.id) { <li><ng-container *ngTemplateOutlet="sentence; context: { id: it.id }" /></li> }</ul>
+                }
+              }
+              @default {
+                <p [class.m-lede]="r.lede">@for (s of r.block.sentences; track s.id) {@if (!$first) {<ng-container>{{ ' ' }}</ng-container>}<ng-container *ngTemplateOutlet="sentence; context: { id: s.id }" />}</p>
+              }
+            }
+            <ng-container *ngTemplateOutlet="notesTpl; context: { notes: r.notes }" />
+          </div>
+        }
+
+        @if (on().quiz && v.unit.question && v.unit.question.show !== false) {
+          <app-quiz [question]="v.unit.question" [unit]="v.unit.n" (sourcesShown)="setSources(v.unit.n, $event)" (whereAsked)="goToSentence($event)" />
+        }
+      </section>
+    }
+  </div>
+</div>

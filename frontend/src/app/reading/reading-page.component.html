@@ -33,6 +33,7 @@
 
       @switch (mode()) {
         @case ('original') { <app-original-view [doc]="doc()!" /> }
+        @case ('margin') { <app-margin-view [doc]="doc()!" (termSelected)="drawer.open($event.termId)" /> }
         @case ('easy') { <app-easy-view [doc]="doc()!" [docId]="id()" (termSelected)="drawer.open($event.termId)" /> }
         @default {
           <div class="soon">

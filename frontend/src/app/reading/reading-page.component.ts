@@ -13,6 +13,7 @@ import { ReadingHeroComponent } from './reading-hero.component';
 import { OriginalViewComponent } from './original-view.component';
 import { EasyViewComponent } from './easy-view.component';
 import { TermDrawerComponent } from './term-drawer.component';
+import { MarginViewComponent } from './margin-view.component';
 
 type PageState = 'loading' | 'ready' | 'not-found' | 'error';
 const MODE_KEY = 'maqra:mode';
@@ -24,7 +25,7 @@ const MODE_KEY = 'maqra:mode';
  */
 @Component({
   selector: 'app-reading-page',
-  imports: [ReadingHeroComponent, OriginalViewComponent, EasyViewComponent, TermDrawerComponent],
+  imports: [ReadingHeroComponent, OriginalViewComponent, EasyViewComponent, MarginViewComponent, TermDrawerComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './reading-page.component.html',
   styleUrl: './reading-page.component.css',

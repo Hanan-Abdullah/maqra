@@ -31,7 +31,10 @@ export function sentenceParts(doc: ReadingDocument): Map<string, TextPart[]> {
     if (pos < text.length) parts.push({ text: text.slice(pos) });
     out.set(id, parts);
   };
+  // the text's title is shown in the green band, not as text, so a term's first appearance is counted after it
+  const title = doc.text.blocks[0]?.type === 'heading' ? doc.text.blocks[0] : null;
   for (const b of doc.text.blocks) {
+    if (b === title) continue;
     b.sentences?.forEach((s) => split(s.id, s.text));
     b.items?.forEach((i) => split(i.id, i.text));
   }
