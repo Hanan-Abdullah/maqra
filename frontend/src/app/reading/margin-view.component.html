@@ -30,14 +30,15 @@
 
 <div class="mag" [class.show-imp]="on().imp" [class.show-terms]="on().terms"
   (mouseover)="link($event, true)" (mouseout)="link($event, false)" (focusin)="link($event, true)" (focusout)="link($event, false)">
-  @if (available().terms || available().imp || available().ss || available().quiz) {
-    <div class="reading-bar" role="group" aria-label="أدوات القراءة">
-      <div class="switches">
-        @if (available().terms) { <dga-switch label="المصطلحات" [checked]="prefs().terms" [isChecked]="prefs().terms" (switchChange)="setPref('terms', $event)"></dga-switch> }
-        @if (available().imp) { <dga-switch label="تمييز المهم" [checked]="prefs().imp" [isChecked]="prefs().imp" (switchChange)="setPref('imp', $event)"></dga-switch> }
-        @if (available().ss) { <dga-switch label="ملخصات الوحدات" [checked]="prefs().ss" [isChecked]="prefs().ss" (switchChange)="setPref('ss', $event)"></dga-switch> }
-        @if (available().quiz) { <dga-switch label="اختبر فهمي" [checked]="prefs().quiz" [isChecked]="prefs().quiz" (switchChange)="setPref('quiz', $event)"></dga-switch> }
-      </div>
+  <!-- what shows on the page: one toggle button per kind of note, in that note's colour.
+       On: a tick (a shape cue, not colour alone). Off: the feature's own icon, in grey. -->
+  @if (chips().length) {
+    <div class="mfilter" role="group" aria-label="ما يظهر في الصفحة">
+      @for (c of chips(); track c.key) {
+        <button type="button" class="chip" [class]="'chip ' + c.cls" [attr.aria-pressed]="prefs()[c.key]" (click)="setPref(c.key, !prefs()[c.key])">
+          <dga-icon [name]="prefs()[c.key] ? 'tick-02' : c.icon"></dga-icon>{{ c.label }}
+        </button>
+      }
     </div>
   }
 

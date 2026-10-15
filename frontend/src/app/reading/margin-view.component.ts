@@ -1,7 +1,6 @@
-import { AfterViewInit, Component, CUSTOM_ELEMENTS_SCHEMA, DestroyRef, ElementRef, computed, inject, input, output, signal } from '@angular/core';
+import { AfterViewInit, Component, CUSTOM_ELEMENTS_SCHEMA, DestroyRef, ElementRef, Injector, afterNextRender, computed, inject, input, output, signal } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { ReadingDocument, ReadingUnit, TextBlock, hasQuestions, hasUnitSummaries } from '../core/reading-document';
-import { SwitchChangeDirective } from '../core/switch-change.directive';
 import { QuizComponent } from './quiz.component';
 import { TextPart, sentenceParts, unitBlocks } from './text-parts';
 
@@ -27,7 +26,7 @@ type Part = TextPart & { lead?: boolean; n?: number };
  */
 @Component({
   selector: 'app-margin-view',
-  imports: [NgTemplateOutlet, SwitchChangeDirective, QuizComponent],
+  imports: [NgTemplateOutlet, QuizComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './margin-view.component.html',
   styleUrl: './margin-view.component.css',
@@ -48,6 +47,17 @@ export class MarginViewComponent implements AfterViewInit {
     ss: hasUnitSummaries(this.doc()),
     quiz: hasQuestions(this.doc()),
   }));
+  /** The toolbar's buttons, in the agreed order; a feature the text does not have gets no button. */
+  protected readonly chips = computed(() => {
+    const a = this.available();
+    const all: { key: keyof Prefs; label: string; cls: string; icon: string }[] = [
+      { key: 'terms', label: 'المصطلحات', cls: 't-term', icon: 'translation' },
+      { key: 'imp', label: 'تمييز المهم', cls: 't-imp', icon: 'sparkles' },
+      { key: 'ss', label: 'ملخصات الوحدات', cls: 't-ss', icon: 'note-01' },
+      { key: 'quiz', label: 'اختبر فهمي', cls: 't-quiz', icon: 'quiz-01' },
+    ];
+    return all.filter((c) => a[c.key]);
+  });
   protected readonly on = computed(() => {
     const p = this.prefs(), a = this.available();
     return { terms: p.terms && a.terms, imp: p.imp && a.imp, ss: p.ss && a.ss, quiz: p.quiz && a.quiz };
@@ -114,11 +124,12 @@ export class MarginViewComponent implements AfterViewInit {
     this.prefs.update((p) => ({ ...p, [key]: value }));
     if (key === 'quiz' && !value) this.sources.set({});
     try { localStorage.setItem(PREFS_KEY, JSON.stringify(this.prefs())); } catch { /* not saved */ }
-    requestAnimationFrame(() => {
+    // after Angular has drawn the notes that just appeared (a frame callback could run before that)
+    afterNextRender(() => {
       this.layoutNotes();
       this.revealNotes();
       if (ref) scrollBy(0, ref.el.getBoundingClientRect().top - ref.top);
-    });
+    }, { injector: this.injector });
   }
 
   private readingLine(): { el: HTMLElement; top: number } | null {
@@ -138,6 +149,7 @@ export class MarginViewComponent implements AfterViewInit {
   // ---------------------------------------------------------------------------------------------
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly injector = inject(Injector);
   protected readonly leaders = signal<Leader[]>([]);
   protected readonly sheetSize = signal({ w: 0, h: 0 });
   protected readonly linked = signal<string | null>(null);

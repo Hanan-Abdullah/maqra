@@ -189,7 +189,7 @@ Angular 19, standalone components and signals. Built piece by piece from `design
 - The mode is in the address, `?mode=original|easy|margin`, and remembered on the device (`maqra:mode`); the default is `easy`. Changing the mode navigates (merge), so Back returns to the previous mode.
 - What a text shows follows its analysis (`display`, `showSummary`, `question.show`): a missing feature is hidden, never shown disabled. `hasUnitSummaries()` / `hasQuestions()` in `core/reading-document.ts` decide whether a switch appears at all (short units hide their summary and question).
 - A term's "first appearance" is counted after the text's title (the title is in the green band).
-- Device storage: `maqra:theme`, `maqra:zoom`, `maqra:mode`, `maqra:prefs` (easy switches), `maqra:prefs:margin` (margin switches), `maqra:done:<id>` (units marked read).
+- Device storage: `maqra:theme`, `maqra:zoom`, `maqra:mode`, `maqra:prefs` (easy switches), `maqra:prefs:margin` (margin toolbar), `maqra:done:<id>` (units marked read).
 - Files: `reading/reading-page` (states, hero, mode tabs, term drawer), `original-view`, `easy-view` (summary, switches, units list, unit cards, progress), `margin-view` (article, notes, leader lines, reading thread), `quiz` (shared by both modes), `term-drawer`, `text-parts.ts` (sentences split around terms).
 
 **Platforms Code library in Angular (0.0.53) — what we learned:**
@@ -200,7 +200,7 @@ Angular 19, standalone components and signals. Built piece by piece from `design
 - `dga-radio-button` is light DOM: its native `change` event reaches the host. Disabled radios fade the text, so a checked quiz shows its options as plain text.
 - Mode tabs: `dga-tabs-v2` + `dga-tab` (not `dga-content-switcher`: no ARIA state, no initial value, unreadable in dark mode). `overflow="scroll"`, otherwise phones hide the last tab behind «…». Styled as filled segments through `::part(base)` and the reflected `selected` attribute.
 - Term panel: `dga-drawer-v2` (backdrop, Esc, focus trap and focus return built in); `placement` end on wide screens, bottom on phones.
-- Not used: `dga-table-of-content` in the easy view (its links are not keyboard reachable and cannot show read units), so the units list is our own, built with the tokens. `dga-chip` (one colour for all) — the margin view uses the same switches as the easy view.
+- Not used: `dga-table-of-content` in the easy view (its links are not keyboard reachable and cannot show read units), so the units list is our own, built with the tokens. `dga-chip` (one colour for all): the margin view's toolbar is our own coloured toggle buttons (`aria-pressed`, a tick when on, the feature's icon in grey when off), as in the design.
 
 **Testing:** run `ng serve` (development mode) as well as a build: some library errors appear only in development.
 
