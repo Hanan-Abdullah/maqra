@@ -55,6 +55,7 @@
               }
             ],
             "styles": [
+              "node_modules/@platformscode/core/dist/core/core.css",
               "src/styles.css"
             ],
             "scripts": []
@@ -64,8 +65,8 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kB",
-                  "maximumError": "1MB"
+                  "maximumWarning": "800kB",
+                  "maximumError": "1.5MB"
                 },
                 {
                   "type": "anyComponentStyle",

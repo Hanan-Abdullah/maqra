@@ -1,1 +1,30 @@
-/* You can add global styles to this file, and also import other style files */
+/*
+ * Global styles. Colours, spacing, radius and the IBM Plex Sans Arabic font come from
+ * @platformscode/core (core.css, loaded before this file in angular.json): light theme in :root,
+ * dark theme in [data-theme=dark]. Use its tokens only; never hard-code colours or spacing.
+ */
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  font-family: "IBM Plex Sans Arabic", system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: var(--background-body);
+  color: var(--text-default);
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+strong, b { font-weight: 700; }
+
+/* core.css removes the focus outline; keyboard users must always see where they are */
+:focus-visible { outline: 2px solid var(--text-default); outline-offset: 2px; border-radius: var(--radius-4); }
+
+[hidden] { display: none !important; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* page width: 1280px max; side padding 16px on phones, 32px from 960px, 80px from 1280px */
+.container { max-width: 1280px; margin-inline: auto; padding-inline: 1rem; }
+@media (min-width: 960px) { .container { padding-inline: 2rem; } }
+@media (min-width: 1280px) { .container { padding-inline: 5rem; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; }
+}
