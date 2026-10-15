@@ -4,6 +4,7 @@ export const routes: Routes = [
   // The home page shows «عن مَقرأ»: readers normally arrive through a text link.
   { path: '', title: 'مَقرأ', loadComponent: () => import('./pages/about-page.component').then((m) => m.AboutPageComponent) },
   { path: 'about', redirectTo: '' },
+  { path: 'contact', title: 'تواصل معنا · مَقرأ', loadComponent: () => import('./pages/contact-page.component').then((m) => m.ContactPageComponent) },
   {
     path: 'read/:id',
     loadComponent: () => import('./reading/reading-page.component').then((m) => m.ReadingPageComponent),
