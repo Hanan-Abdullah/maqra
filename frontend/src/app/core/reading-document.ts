@@ -92,3 +92,13 @@ export function documentTitle(doc: ReadingDocument, original = false): string {
   if (original) return 'النص الأصلي';
   return doc.analysis.readingUnits[0]?.title ?? 'النص';
 }
+
+/** True when at least one unit has a summary worth showing (short units hide theirs). */
+export function hasUnitSummaries(doc: ReadingDocument): boolean {
+  return !!doc.display?.showSectionSummaries && doc.analysis.readingUnits.some((u) => !!u.summary && u.showSummary !== false);
+}
+
+/** True when at least one unit has a question worth showing (short units hide theirs). */
+export function hasQuestions(doc: ReadingDocument): boolean {
+  return !!doc.display?.showQuestions && doc.analysis.readingUnits.some((u) => !!u.question && u.question.show !== false);
+}

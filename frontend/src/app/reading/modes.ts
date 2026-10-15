@@ -1,4 +1,4 @@
-import { ReadingDocument } from '../core/reading-document';
+import { ReadingDocument, hasQuestions, hasUnitSummaries } from '../core/reading-document';
 
 export type Mode = 'original' | 'easy' | 'margin';
 
@@ -21,18 +21,19 @@ export function leadFor(mode: Mode, doc: ReadingDocument): string {
   const d = doc.display ?? {};
   const many = doc.analysis.readingUnits.length > 1;
   const terms = doc.analysis.terms.length > 0 && d.showTerms !== false;
+  const summaries = hasUnitSummaries(doc);
   const and = (xs: string[]) => xs.join(' و');
   if (mode === 'easy') {
     const xs: string[] = [];
-    if (d.showSectionSummaries) xs.push('ملخصات');
+    if (summaries) xs.push('ملخصات');
     if (d.showImportance) xs.push('تمييز للمهم');
     if (terms) xs.push('شرح للمصطلحات');
-    if (d.showQuestions) xs.push(many ? 'أسئلة لاختبار الفهم' : 'سؤال لاختبار الفهم');
+    if (hasQuestions(doc)) xs.push(many ? 'أسئلة لاختبار الفهم' : 'سؤال لاختبار الفهم');
     if (!xs.length) return many ? 'النص مقسّمًا إلى وحدات، مع خلاصته.' : 'النص مع خلاصته.';
     return (many ? 'النص مقسّمًا إلى وحدات، مع ' : 'النص مع ') + and(xs) + '.';
   }
   const notes: string[] = [];
   if (terms) notes.push('شروح المصطلحات');
-  if (d.showSectionSummaries) notes.push('ملخصات الوحدات');
+  if (summaries) notes.push('ملخصات الوحدات');
   return notes.length ? 'النص في المتن، و' + and(notes) + ' في الحواشي بجانبه.' : 'النص في المتن مع خلاصته.';
 }

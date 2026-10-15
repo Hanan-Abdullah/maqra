@@ -1,7 +1,7 @@
 import { Component, CUSTOM_ELEMENTS_SCHEMA, computed, input, output, signal } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { SwitchChangeDirective } from '../core/switch-change.directive';
-import { ReadingDocument, ReadingUnit, titleBlock } from '../core/reading-document';
+import { ReadingDocument, ReadingUnit, hasUnitSummaries, titleBlock } from '../core/reading-document';
 import { TextPart, sentenceParts, unitBlocks } from './text-parts';
 
 interface Prefs { terms: boolean; imp: boolean; ss: boolean; quiz: boolean; }
@@ -36,7 +36,7 @@ export class EasyViewComponent {
   protected readonly available = computed(() => ({
     terms: this.hasTerms(),
     imp: !!this.display().showImportance,
-    ss: !!this.display().showSectionSummaries,
+    ss: hasUnitSummaries(this.doc()),
   }));
   protected readonly on = computed(() => {
     const p = this.prefs(), a = this.available();
