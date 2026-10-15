@@ -1,35 +1,94 @@
 // The display document returned by GET /api/documents/:id.
 // It has the same shape as the skill's document.json (built by merge.js).
-// Only the parts used so far are typed; more fields are added as the page grows.
+
+export interface Sentence { id: string; text: string; }          // p3.s2
+export interface ListItem { id: string; text: string; }          // l1.i4
 
 export interface TextBlock {
   order: number;
-  id: string; // h1, p3, l2 …
+  id: string;                    // h1, p3, l2 …
   type: 'heading' | 'paragraph' | 'list';
-  text?: string;
+  text?: string;                 // headings and paragraphs: the whole text
+  sentences?: Sentence[];        // paragraphs
+  items?: ListItem[];            // lists
+  ordered?: boolean;             // lists
+}
+
+export interface Occurrence { at: string; start: number; end: number; form?: string; }
+
+export interface Term {
+  id: string;
+  term: string;
+  translation: string | null;
+  occurrences: Occurrence[];
+  meaning: string;
+  explanation: string;
+  example: string;
+}
+
+export interface Question {
+  text: string;
+  options: string[];
+  answer: number;
+  explanation: string;
+  sources: string[];
+  show?: boolean;
 }
 
 export interface ReadingUnit {
   n: number;
   title: string;
+  blocks: string[];
+  summary?: string;
+  showSummary?: boolean;
+  wordCount?: number;
+  question?: Question;
 }
+
+export interface KeyPoint { unit: number; text: string; sources: string[]; }
+
+export type Importance = 'primary' | 'supporting' | 'secondary';
 
 export interface ReadingDocument {
   schemaVersion: string;
   segmenterVersion: string;
-  text: {
-    wordCount: number;
-    blocks: TextBlock[];
-  };
+  createdAt?: string;
+  text: { wordCount: number; blocks: TextBlock[]; };
   analysis: {
     summary: string;
+    keyPoints: KeyPoint[];
     readingUnits: ReadingUnit[];
+    terms: Term[];
+    importance: Record<string, Importance>;
+  };
+  display?: {
+    showImportance?: boolean;
+    showSectionSummaries?: boolean;
+    showKeyPoints?: boolean;
+    showTerms?: boolean;
+    showQuestions?: boolean;
   };
 }
 
-// The author's title when the text starts with a heading, otherwise the first unit's title.
-export function documentTitle(doc: ReadingDocument): string {
+/** The author's title: the text's first block when it is a heading. */
+export function titleBlock(doc: ReadingDocument): TextBlock | null {
   const first = doc.text.blocks[0];
-  if (first && first.type === 'heading' && first.text) return first.text;
+  return first && first.type === 'heading' ? first : null;
+}
+
+/** The author's headings inside the text (not the title). */
+export function authorSections(doc: ReadingDocument): TextBlock[] {
+  const title = titleBlock(doc);
+  return doc.text.blocks.filter((b) => b.type === 'heading' && b !== title);
+}
+
+/**
+ * The page title. The original mode never shows anything the analysis wrote,
+ * so without an author's title it says «النص الأصلي».
+ */
+export function documentTitle(doc: ReadingDocument, original = false): string {
+  const author = titleBlock(doc)?.text;
+  if (author) return author;
+  if (original) return 'النص الأصلي';
   return doc.analysis.readingUnits[0]?.title ?? 'النص';
 }

@@ -3,24 +3,47 @@
     <p class="status" role="status">جارٍ تحميل النص…</p>
   }
   @case ('not-found') {
-    <main class="card">
-      <p class="brand">مَقرأ</p>
-      <h1>لم نجد هذا النص في مَقرأ</h1>
-      <p>قد يكون الرابط ناقصًا، تأكد أنك نسخته كاملًا.</p>
-    </main>
+    <div class="container">
+      <div class="notice">
+        <p class="brand">مَقرأ</p>
+        <h1>لم نجد هذا النص في مَقرأ</h1>
+        <p>قد يكون الرابط ناقصًا، تأكد أنك نسخته كاملًا.</p>
+      </div>
+    </div>
   }
   @case ('error') {
-    <main class="card">
-      <p class="brand">مَقرأ</p>
-      <h1>تعذّر الاتصال بمقرأ</h1>
-      <p>حاول مرة أخرى بعد قليل.</p>
-    </main>
+    <div class="container">
+      <div class="notice">
+        <p class="brand">مَقرأ</p>
+        <h1>تعذّر الاتصال بمقرأ</h1>
+        <p>حاول مرة أخرى بعد قليل.</p>
+      </div>
+    </div>
   }
   @case ('ready') {
-    <!-- Temporary: proves the document arrived. The real page is built in the next pieces. -->
-    <main class="page">
-      <h1>{{ title() }}</h1>
-      <p>{{ doc()!.text.wordCount }} كلمة</p>
-    </main>
+    <app-reading-hero [doc]="doc()!" [mode]="mode()" />
+    <div class="container">
+      <div class="switcher">
+        <dga-tabs-v2 size="lg" [value]="mode()" accessible-label="نمط العرض" (dgaChange)="onTabChange($event)">
+          @for (m of modes; track m.id) {
+            <dga-tab [value]="m.id" [label]="m.label" [icon]="m.icon"></dga-tab>
+          }
+        </dga-tabs-v2>
+      </div>
+
+      @switch (mode()) {
+        @case ('original') { <app-original-view [doc]="doc()!" /> }
+        @default {
+          <div class="soon">
+            <h2>{{ modes[modeIndex()].label }}</h2>
+            <p>يُبنى هذا النمط في المرحلة القادمة.</p>
+          </div>
+        }
+      }
+
+      @if (analysedOn()) {
+        <p class="updated"><dga-icon name="calendar-04"></dga-icon>تاريخ تحليل النص: {{ analysedOn() }}</p>
+      }
+    </div>
   }
 }

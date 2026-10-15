@@ -1,0 +1,20 @@
+:host { display: block; }
+.layout { display: grid; gap: 2rem; padding-block: 2.5rem 0; }
+@media (min-width: 960px) {
+  .layout { grid-template-columns: 16rem minmax(0, 45rem); justify-content: start; }
+  .layout.solo { grid-template-columns: minmax(0, 45rem); justify-content: center; }
+  .toc { position: sticky; top: 1.5rem; align-self: start; }
+}
+.doc { min-width: 0; background: var(--background-card); border: 1px solid var(--border-neutral-secondary); border-radius: var(--radius-8); padding: 1.5rem; }
+@media (min-width: 600px) { .doc { padding: 2.5rem; } }
+.doc p { margin: 0 0 1rem; font-size: 1.125rem; line-height: 2rem; color: var(--text-default); }
+.doc h2 {
+  margin: 2.5rem 0 1rem; font-size: 1.5rem; line-height: 2rem; font-weight: 700; color: var(--text-default);
+  display: flex; align-items: center; gap: var(--spacing-lg); scroll-margin-top: 1.5rem;
+}
+.doc h2::before { content: ""; inline-size: 4px; block-size: 1.5rem; border-radius: var(--radius-full); background: var(--background-primary); flex: none; }
+.doc > :first-child { margin-top: 0; }
+.plain { margin: 0 0 1rem; padding-inline-start: 1.5rem; display: grid; gap: var(--spacing-md); font-size: 1.125rem; line-height: 2rem; }
+ul.plain { list-style: disc; }
+ol.plain { list-style: decimal; }
+.plain li::marker { color: var(--text-primary); }
