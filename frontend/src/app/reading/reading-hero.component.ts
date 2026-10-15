@@ -1,4 +1,4 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, computed, input, signal } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, computed, input, output, signal } from '@angular/core';
 import { ReadingDocument, authorSections, documentTitle } from '../core/reading-document';
 import { count } from '../core/arabic';
 import { MODES, Mode, leadFor } from './modes';
@@ -15,6 +15,8 @@ interface MetaCard { icon: string; tone: 'green' | 'gold' | 'lavender'; value: s
 export class ReadingHeroComponent {
   readonly doc = input.required<ReadingDocument>();
   readonly mode = input.required<Mode>();
+  /** The reader wants to report a mistake in the analysis. */
+  readonly report = output<void>();
 
   protected readonly modeInfo = computed(() => MODES.find((m) => m.id === this.mode())!);
   protected readonly title = computed(() => documentTitle(this.doc(), this.mode() === 'original'));

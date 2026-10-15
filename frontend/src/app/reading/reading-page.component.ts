@@ -14,6 +14,7 @@ import { OriginalViewComponent } from './original-view.component';
 import { EasyViewComponent } from './easy-view.component';
 import { TermDrawerComponent } from './term-drawer.component';
 import { MarginViewComponent } from './margin-view.component';
+import { ReportDialogComponent } from './report-dialog.component';
 
 type PageState = 'loading' | 'ready' | 'not-found' | 'error';
 const MODE_KEY = 'maqra:mode';
@@ -25,7 +26,7 @@ const MODE_KEY = 'maqra:mode';
  */
 @Component({
   selector: 'app-reading-page',
-  imports: [ReadingHeroComponent, OriginalViewComponent, EasyViewComponent, MarginViewComponent, TermDrawerComponent],
+  imports: [ReadingHeroComponent, OriginalViewComponent, EasyViewComponent, MarginViewComponent, TermDrawerComponent, ReportDialogComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './reading-page.component.html',
   styleUrl: './reading-page.component.css',
@@ -75,6 +76,16 @@ export class ReadingPageComponent implements OnInit {
         this.pageTitle.setTitle(err.status === 404 ? 'النص غير موجود · مَقرأ' : 'مَقرأ');
       },
     });
+  }
+
+  /** The unit being read: the last one whose top has passed the upper part of the screen (none in the original text). */
+  protected unitInView(): number | null {
+    let n: number | null = null;
+    document.querySelectorAll<HTMLElement>('section.unit, section.m-unit').forEach((u) => {
+      if (u.getBoundingClientRect().top < innerHeight * 0.4) n = Number(u.id.replace(/\D/g, '')) || null;
+    });
+    if (n === null && document.querySelector('section.unit, section.m-unit')) n = 1;
+    return n;
   }
 
   setMode(mode: Mode): void {

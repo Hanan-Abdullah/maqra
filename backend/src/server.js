@@ -7,10 +7,10 @@ const PORT = Number(process.env.PORT || 3010);
 const PUBLIC_URL = (process.env.PUBLIC_URL || `http://localhost:${PORT}`).replace(/\/$/, '');
 
 async function main() {
-  const { client, documents } = await connect(process.env.MONGO_URL, process.env.MONGO_DB);
+  const { client, documents, feedback } = await connect(process.env.MONGO_URL, process.env.MONGO_DB);
   console.log(`Connected to MongoDB: ${process.env.MONGO_DB}`);
 
-  const app = createApp({ documents, publicUrl: PUBLIC_URL });
+  const app = createApp({ documents, feedback, publicUrl: PUBLIC_URL });
   const server = app.listen(PORT, () => console.log(`Maqra backend running on ${PUBLIC_URL}`));
 
   const stop = async () => {

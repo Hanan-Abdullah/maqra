@@ -31,3 +31,15 @@ export function registerPlatformsCode(): void {
     defineNavHeader, defineNavHeaderMain, defineNavHeaderActions, defineTabs, defineTab, defineTableOfContent, defineSwitch,
     defineDrawer, defineDrawerHeader, defineDrawerBody, defineDrawerFooter, defineRadio].forEach((define) => define());
 }
+
+/**
+ * The form fields (text input, textarea, dropdown) are about 100 KB, needed only by the report form:
+ * they are loaded when that form is first created, not with the first page.
+ */
+export function registerFormFields(): Promise<void> {
+  return Promise.all([
+    import('@platformscode/core/components/dga-text-input.js'),
+    import('@platformscode/core/components/dga-textarea.js'),
+    import('@platformscode/core/components/dga-dropdown.js'),
+  ]).then((mods) => mods.forEach((m) => m.defineCustomElement()));
+}

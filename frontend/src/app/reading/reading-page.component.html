@@ -21,7 +21,7 @@
     </div>
   }
   @case ('ready') {
-    <app-reading-hero [doc]="doc()!" [mode]="mode()" />
+    <app-reading-hero [doc]="doc()!" [mode]="mode()" (report)="reportDialog.open(unitInView())" />
     <div class="container">
       <div class="switcher">
         <dga-tabs-v2 size="lg" overflow="scroll" [value]="mode()" accessible-label="نمط العرض" (dgaChange)="onTabChange($event)">
@@ -48,5 +48,6 @@
       }
     </div>
     <app-term-drawer #drawer [doc]="doc()!" />
+    <app-report-dialog #reportDialog [docId]="id()" [mode]="mode()" />
   }
 }

@@ -1,0 +1,144 @@
+<dga-drawer-v2
+  class="report"
+  [open]="isOpen()"
+  [placement]="phone() ? 'bottom' : 'end'"
+  size="md"
+  label="الإبلاغ عن خطأ"
+  (openChange)="onOpenChange($event)"
+>
+  <dga-drawer-header close-label="إغلاق">
+    <span slot="title">الإبلاغ عن خطأ </span>
+    @if (state() !== "done") {
+      <span slot="description"
+        >ساعدنا على تحسين مَقرأ بوصف الخطأ الذي وجدته.</span
+      >
+    }
+  </dga-drawer-header>
+
+  <dga-drawer-body>
+    @if (state() === "done") {
+      <div class="done">
+        <span class="fi"><dga-icon name="checkmark-circle-02"></dga-icon></span>
+        <h3 id="rp-done-h" tabindex="-1">وصلنا بلاغك</h3>
+        <p>شكرًا لك، سنراجع البلاغ ونعمل على تحسين التحليل.</p>
+      </div>
+    } @else if (fieldsReady()) {
+      <form id="rp-form" class="form" novalidate (submit)="send($event)">
+        <p class="req-note">
+          <span class="req" aria-hidden="true">*</span> الحقول المعلَّمة بنجمة
+          مطلوبة.
+        </p>
+
+        <div class="fld">
+          <span class="lbl" id="rp-name-l"
+            >الاسم <span class="req" aria-hidden="true">*</span></span
+          >
+          <dga-text-input
+            name="name"
+            autocomplete="name"
+            [required]="true"
+            [fullwidth]="true"
+            [value]="name()"
+            aria-labelledby="rp-name-l"
+            (dgaInput)="name.set(typed($event))"
+          ></dga-text-input>
+        </div>
+
+        <div class="fld">
+          <span class="lbl" id="rp-email-l"
+            >البريد الإلكتروني
+            <span class="req" aria-hidden="true">*</span></span
+          >
+          <dga-text-input
+            name="email"
+            autocomplete="email"
+            [required]="true"
+            [fullwidth]="true"
+            [value]="email()"
+            [error]="emailError()"
+            [helperText]="
+              emailError()
+                ? 'اكتب بريدًا إلكترونيًا صحيحًا، مثل name@example.com'
+                : 'نستخدمه للتواصل معك بخصوص بلاغك فقط.'
+            "
+            aria-labelledby="rp-email-l"
+            (dgaInput)="email.set(typed($event))"
+            (dgaBlur)="emailLeft.set(true)"
+          ></dga-text-input>
+        </div>
+
+        <div class="fld">
+          <span class="lbl" id="rp-type-l"
+            >نوع البلاغ <span class="req" aria-hidden="true">*</span></span
+          >
+          <dga-dropdown
+            name="type"
+            placeholder="اختر نوع البلاغ"
+            [required]="true"
+            [options]="types"
+            option-label="label"
+            track-by="value"
+            [value]="type()"
+            aria-labelledby="rp-type-l"
+            (dropdownChange)="type.set($any($event))"
+          ></dga-dropdown>
+        </div>
+
+        <div class="fld">
+          <span class="lbl" id="rp-msg-l"
+            >وصف الخطأ <span class="req" aria-hidden="true">*</span></span
+          >
+          <dga-textarea
+            name="message"
+            [rows]="4"
+            [required]="true"
+            [fullwidth]="true"
+            [maxlength]="2000"
+            [value]="message()"
+            helper-text="اذكر موضع الخطأ، وما الصواب في رأيك."
+            aria-labelledby="rp-msg-l"
+            (dgaInput)="message.set(typed($event))"
+          ></dga-textarea>
+        </div>
+
+        <p class="ctx">
+          <dga-icon name="information-circle"></dga-icon>يُرفق بالبلاغ تلقائيًا
+          رابط النص، والنمط الذي تقرأ فيه، والوحدة التي وصلت إليها.
+        </p>
+        @if (state() === "failed") {
+          <p class="failed" role="alert">
+            <dga-icon name="alert-circle"></dga-icon>تعذّر إرسال البلاغ، حاول
+            مرة أخرى بعد قليل.
+          </p>
+        }
+      </form>
+    }
+  </dga-drawer-body>
+
+  <dga-drawer-footer>
+    @if (state() === "done") {
+      <dga-button
+        variant="primary-brand"
+        size="md"
+        label="إغلاق"
+        (click)="close()"
+      ></dga-button>
+    } @else {
+      <dga-button
+        variant="primary-brand"
+        size="md"
+        type="submit"
+        lead-icon-type="mail-send-01"
+        [label]="state() === 'sending' ? 'جارٍ الإرسال…' : 'إرسال البلاغ'"
+        [disabled]="!ready() || state() === 'sending'"
+        (click)="send()"
+      ></dga-button>
+      <dga-button
+        variant="secondary-outline"
+        size="md"
+        label="إلغاء"
+        (click)="close()"
+      ></dga-button>
+    }
+  </dga-drawer-footer>
+</dga-drawer-v2>

@@ -58,6 +58,7 @@ The analysis happens in the Claude chat, **not** through the API, so the backend
 **Routes:**
 - `POST /api/documents`: receives `{ text, analysis, source, processing }`. Validates with `merge.js`, and also rejects an analysis without reading units or without a summary. Stores it and returns `{ id, url, warnings }`. Errors: 400 for a malformed request, 422 for an invalid analysis.
 - `GET /api/documents/:id`: returns only the display document (`document`), no internal data.
+- `POST /api/feedback`: what readers send from the page (`backend/src/feedback.js` checks it). `kind: report` needs `documentId` (an existing text), `name`, `email`, `type` (`term`, `unit-summary`, `summary`, `importance`, `question`, `other`), `message`; `mode` and `unit` are attached by the page. `kind: helpful` needs `helpful` (true/false) and `page` (the path), with `documentId` and `mode` on a reading page. 400 for invalid input, 404 for a report about an unknown text, 201 when saved.
 - `GET /read/:id`: the temporary reading page (the skill's template) until the Angular page replaces it.
 - `GET /health`
 
@@ -75,7 +76,9 @@ The analysis happens in the Claude chat, **not** through the API, so the backend
 
 The numbers in `stats` and `textProfile` are computed by the backend from the document, never taken from the request.
 
-**Later collections:** `events` (reading log, with the Angular page), `users` and `progress` (with sign-in), `feedback` (optional).
+**`feedback` record:** `kind` (`report` | `helpful`), `documentId`, `mode`, `createdAt`; a report adds `unit`, `type`, `name`, `email`, `message`, `status: new`; an answer adds `helpful` and `page`. Reports hold a name and an email: personal data, covered by the privacy notice before launch.
+
+**Later collections:** `events` (reading log), `users` and `progress` (with sign-in).
 
 ## Running locally
 
@@ -202,11 +205,13 @@ Angular 19, standalone components and signals. Built piece by piece from `design
 - Term panel: `dga-drawer-v2` (backdrop, Esc, focus trap and focus return built in); `placement` end on wide screens, bottom on phones.
 - Not used: `dga-table-of-content` in the easy view (its links are not keyboard reachable and cannot show read units), so the units list is our own, built with the tokens. `dga-chip` (one colour for all): the margin view's toolbar is our own coloured toggle buttons (`aria-pressed`, a tick when on, the feature's icon in grey when off), as in the design.
 
+**Report form:** `reading/report-dialog` in a `dga-drawer-v2` (side panel, bottom sheet on phones), not `dga-modal-v2` (it opens a non-modal `<dialog>`: no focus trap, no Esc, a hard-coded icon colour). Fields are `dga-text-input`, `dga-dropdown` (choice through `DropdownChangeDirective`, the same `onChange` problem as the switch) and `dga-textarea`, read through their `dgaInput` events. They are about 100 KB, so `registerFormFields()` loads them with the form, and the form is drawn only after they are defined (values set earlier are lost, e.g. the dropdown's options). "Was this page helpful?" (`layout/page-feedback`) is saved too.
+
 **Testing:** run `ng serve` (development mode) as well as a build: some library errors appear only in development.
 
 ## Remaining work
 
-1. The Angular page: the three reading modes are done. Next: the contact page (`/contact`, map) and the report dialog, then the `feedback` collection (reports and "was this page helpful?") and the `events` reading log; then the backend serves the built Angular files in place of the skill's template.
+1. The Angular page: the three reading modes, the contact page and the report form (saved in `feedback`) are done. Next: the `events` reading log, then the backend serves the built Angular files in place of the skill's template.
 2. Before deployment: a shared secret between the skill and the backend, request rate limiting, the `maqra` container, a database password, and deletion of a text at its owner's request.
    - **Privacy:** users are told that their text is stored **before** they use the skill (in its description or the message it is distributed with), not in every reply. The report dialog collects a name and email, so a privacy notice on the page is required before launch. The wording will be written together with the developer. Check the organisation's policy and the Saudi Personal Data Protection Law.
 3. Deployment: move the repository to the organisation, coordinate with the server administrator (subdomain and Nginx), and change `config.json`. Ask the organisation about header, footer and digital stamp requirements.

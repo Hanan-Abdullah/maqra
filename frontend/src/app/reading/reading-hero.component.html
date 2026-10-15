@@ -1,10 +1,36 @@
 <section class="hero" aria-labelledby="doc-title">
   <div class="container">
     <div class="top">
-      <span class="eyebrow"><dga-icon [name]="modeInfo().icon"></dga-icon>{{ modeInfo().label }}</span>
+      <span class="eyebrow"
+        ><dga-icon [name]="modeInfo().icon"></dga-icon
+        >{{ modeInfo().label }}</span
+      >
       <div class="actions" role="toolbar" aria-label="إجراءات الصفحة">
-        <button class="hero-btn" type="button" aria-label="مشاركة" (click)="share()"><dga-icon name="share-08"></dga-icon><span class="lbl">مشاركة</span></button>
-        <button class="hero-btn" type="button" aria-label="طباعة" (click)="print()"><dga-icon name="printer"></dga-icon><span class="lbl">طباعة</span></button>
+        <button
+          class="hero-btn"
+          type="button"
+          aria-label="مشاركة"
+          (click)="share()"
+        >
+          <dga-icon name="share-08"></dga-icon><span class="lbl">مشاركة</span>
+        </button>
+        <button
+          class="hero-btn"
+          type="button"
+          aria-label="طباعة"
+          (click)="print()"
+        >
+          <dga-icon name="printer"></dga-icon><span class="lbl">طباعة</span>
+        </button>
+        <button
+          class="hero-btn"
+          type="button"
+          aria-label="إبلاغ عن خطأ"
+          aria-haspopup="dialog"
+          (click)="report.emit()"
+        >
+          <dga-icon name="flag-02"></dga-icon><span class="lbl">إبلاغ</span>
+        </button>
       </div>
     </div>
     <h1 id="doc-title">{{ title() }}</h1>
@@ -12,11 +38,18 @@
     <ul class="meta">
       @for (c of cards(); track c.label) {
         <li>
-          <span [class]="'fi ' + c.tone"><dga-icon [name]="c.icon"></dga-icon></span>
-          <div><b>{{ c.value }}</b><span>{{ c.label }}</span></div>
+          <span [class]="'fi ' + c.tone"
+            ><dga-icon [name]="c.icon"></dga-icon
+          ></span>
+          <div>
+            <b>{{ c.value }}</b
+            ><span>{{ c.label }}</span>
+          </div>
         </li>
       }
     </ul>
   </div>
 </section>
-<div class="toast" [class.show]="toast()" role="status" aria-live="polite">{{ toast() }}</div>
+<div class="toast" [class.show]="toast()" role="status" aria-live="polite">
+  {{ toast() }}
+</div>

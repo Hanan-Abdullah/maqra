@@ -11,7 +11,12 @@ async function connect(url, dbName) {
   const documents = db.collection('documents');
   await documents.createIndex({ createdAt: -1 });
 
-  return { client, documents };
+  // What readers send from the page: reports about the analysis and "was this page helpful?" answers.
+  const feedback = db.collection('feedback');
+  await feedback.createIndex({ kind: 1, createdAt: -1 });
+  await feedback.createIndex({ documentId: 1 });
+
+  return { client, documents, feedback };
 }
 
 module.exports = { connect };

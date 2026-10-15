@@ -5,6 +5,7 @@ const crypto = require('crypto');
 const express = require('express');
 const { readMeta, buildRecord } = require('./record');
 const { readingPage, NOT_FOUND } = require('./pages');
+const { readFeedback } = require('./feedback');
 
 // The same validation code the skill uses, so the server accepts exactly what the skill accepts.
 const Merger = require(path.join(__dirname, '..', '..', 'skill', 'arabic-easy-reading', 'scripts', 'merge.js'));
@@ -13,7 +14,7 @@ const Merger = require(path.join(__dirname, '..', '..', 'skill', 'arabic-easy-re
 const newId = () => crypto.randomBytes(8).toString('base64url').slice(0, 10);
 const ID_PATTERN = /^[A-Za-z0-9_-]{10}$/;
 
-function createApp({ documents, publicUrl }) {
+function createApp({ documents, feedback, publicUrl }) {
   const app = express();
   app.use(express.json({ limit: '2mb' }));
 
@@ -57,6 +58,18 @@ function createApp({ documents, publicUrl }) {
     const found = await documents.findOne({ _id: req.params.id }, { projection: { document: 1 } });
     if (!found) return res.status(404).json({ errors: ['not found'] });
     res.json(found.document);
+  });
+
+  // A reader's feedback: a report about the analysis of a text, or a "was this page helpful?" answer.
+  // A report must point at a stored text, so a report about nothing is refused.
+  app.post('/api/feedback', async (req, res) => {
+    const { record, error } = readFeedback(req.body);
+    if (error) return res.status(400).json({ errors: [error] });
+    if (record.documentId && !(await documents.findOne({ _id: record.documentId }, { projection: { _id: 1 } }))) {
+      return res.status(404).json({ errors: ['text not found'] });
+    }
+    await feedback.insertOne(record);
+    res.status(201).json({ ok: true });
   });
 
   // Temporary reading page (the skill's HTML template) until the Angular page replaces it.
