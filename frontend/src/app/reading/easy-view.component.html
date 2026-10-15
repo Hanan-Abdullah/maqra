@@ -1,0 +1,79 @@
+<!-- one line on purpose: whitespace between the parts would split words (e.g. «ب» + «التعلّم») -->
+<ng-template #sentence let-id="id"><span [class]="'s ' + levelOf(id)" [attr.data-id]="id">@if (on().imp && levelOf(id) === 'primary') {<span class="sr-only">مهم: </span>}@for (p of partsOf(id); track $index) {@if (p.termId) {<button type="button" class="term" [class.first]="p.first" aria-haspopup="dialog" [disabled]="!on().terms" (click)="openTerm(p.termId, $event)">{{ p.text }}</button>} @else {<ng-container>{{ p.text }}</ng-container>}}</span></ng-template>
+
+<div class="easy" [class.show-imp]="on().imp" [class.show-terms]="on().terms">
+  <div class="layout" [class.solo]="!many()">
+    @if (many()) {
+      <div class="toc"><dga-table-of-content [title]="tocTitle()" sub-title="وحدات النص" [sections]="tocSections()" [rtl]="true"></dga-table-of-content></div>
+    }
+
+    <div class="article">
+      <section class="overview" aria-labelledby="ov-h">
+        <div class="ov-head"><span class="fi gold"><dga-icon name="idea-01"></dga-icon></span><h2 id="ov-h">الخلاصة</h2></div>
+        <p class="ov-summary">{{ doc().analysis.summary }}</p>
+        @if (showKeyPoints()) {
+          <h3 class="ov-sub">النقاط الرئيسية</h3>
+          <ol class="kps">
+            @for (kp of doc().analysis.keyPoints; track $index) {
+              <li>
+                <button type="button" class="kp" [attr.aria-label]="kp.text + ' — انتقل إلى الوحدة ' + kp.unit" (click)="goToUnit(kp.unit)">
+                  <span class="kp-n">{{ $index + 1 }}</span><span class="kp-t">{{ kp.text }}</span>
+                  <dga-icon class="kp-go" name="arrow-left-02"></dga-icon>
+                </button>
+              </li>
+            }
+          </ol>
+        }
+      </section>
+
+      @if (available().terms || available().imp || available().ss) {
+        <div class="reading-bar" role="group" aria-label="أدوات القراءة">
+          <!-- dga-switch reads `checked` before Angular sets it, so its internal state (isChecked) is set too -->
+          <div class="switches">
+            @if (available().terms) { <dga-switch label="المصطلحات" [checked]="prefs().terms" [isChecked]="prefs().terms" (switchChange)="setPref('terms', $event)"></dga-switch> }
+            @if (available().imp) { <dga-switch label="تمييز المهم" [checked]="prefs().imp" [isChecked]="prefs().imp" (switchChange)="setPref('imp', $event)"></dga-switch> }
+            @if (available().ss) { <dga-switch label="ملخصات الوحدات" [checked]="prefs().ss" [isChecked]="prefs().ss" (switchChange)="setPref('ss', $event)"></dga-switch> }
+          </div>
+          @if (on().terms || on().imp) {
+            <p class="legend" aria-label="دليل الألوان">
+              @if (on().terms) { <span><span class="smp-term">الكلمة الخضراء</span>مصطلح، اضغط عليها لعرض شرحها</span> }
+              @if (on().imp) { <span><span class="smp-imp">النص المظلَّل</span>جملة مهمة</span> }
+            </p>
+          }
+        </div>
+      }
+
+      <div class="units">
+        @for (u of units(); track u.n) {
+          <section class="unit" [id]="'unit-' + u.n" tabindex="-1" [attr.aria-labelledby]="'unit-h-' + u.n">
+            <span class="unit-n">{{ many() ? 'الوحدة ' + u.n + ' من ' + units().length : 'النص' }}</span>
+            <h2 class="unit-title" [id]="'unit-h-' + u.n">{{ u.title }}</h2>
+            @if (showUnitSummary(u) && on().ss) {
+              <div class="unit-summary t-ss">
+                <p class="us-label"><dga-icon name="note-01"></dga-icon>ملخص الوحدة</p>
+                <p class="us-text">{{ u.summary }}</p>
+              </div>
+            }
+            <div class="text">
+              @for (b of blocksOf(u); track b.id) {
+                @switch (b.type) {
+                  @case ('heading') { <h3 class="sub-h">{{ b.text }}</h3> }
+                  @case ('list') {
+                    @if (b.ordered) {
+                      <ol class="plain">@for (it of b.items; track it.id) { <li><ng-container *ngTemplateOutlet="sentence; context: { id: it.id, text: it.text }" /></li> }</ol>
+                    } @else {
+                      <ul class="plain">@for (it of b.items; track it.id) { <li><ng-container *ngTemplateOutlet="sentence; context: { id: it.id, text: it.text }" /></li> }</ul>
+                    }
+                  }
+                  @default {
+                    <p>@for (s of b.sentences; track s.id) {@if (!$first) {<ng-container>{{ ' ' }}</ng-container>}<ng-container *ngTemplateOutlet="sentence; context: { id: s.id, text: s.text }" />}</p>
+                  }
+                }
+              }
+            </div>
+          </section>
+        }
+      </div>
+    </div>
+  </div>
+</div>

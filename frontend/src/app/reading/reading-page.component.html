@@ -33,6 +33,7 @@
 
       @switch (mode()) {
         @case ('original') { <app-original-view [doc]="doc()!" /> }
+        @case ('easy') { <app-easy-view [doc]="doc()!" /> }
         @default {
           <div class="soon">
             <h2>{{ modes[modeIndex()].label }}</h2>

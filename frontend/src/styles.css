@@ -71,3 +71,19 @@ strong, b { font-weight: 700; }
   color: var(--text-oncolor-primary);
 }
 @media (min-width: 960px) { .hero h1 { font-size: 3rem; line-height: 3.75rem; } }
+
+/* ---------- reading: shared by both analysis modes ---------- */
+
+/* importance highlight (gold background + underline; the colour is never the only cue) */
+:root { --hl-bg: var(--colors-secondary-gold-100); --hl-line: var(--colors-secondary-gold-500); --hl-ink: var(--colors-neutral-950); }
+[data-theme=dark] { --hl-bg: var(--colors-secondary-gold-900); --hl-line: var(--colors-secondary-gold-400); --hl-ink: var(--colors-secondary-gold-50); }
+
+/* one colour per feature, the same in every mode: terms green, importance gold, unit summaries blue, questions purple */
+.t-term { --nc: var(--colors-primary-sa-flag-600-primary); --nbg: var(--colors-primary-sa-flag-50); --nink: var(--colors-primary-sa-flag-800); }
+.t-imp { --nc: var(--colors-secondary-gold-500); --nbg: var(--colors-secondary-gold-100); --nink: var(--colors-secondary-gold-800); }
+.t-ss { --nc: var(--colors-blue-600); --nbg: var(--colors-blue-50); --nink: var(--colors-blue-800); }
+.t-quiz { --nc: var(--colors-tertiary-lavendar-500-primary); --nbg: var(--colors-tertiary-lavendar-50); --nink: var(--colors-tertiary-lavendar-700); }
+[data-theme=dark] .t-term { --nc: var(--colors-primary-sa-flag-400); --nbg: var(--colors-primary-sa-flag-950); --nink: var(--colors-primary-sa-flag-200); }
+[data-theme=dark] .t-imp { --nc: var(--colors-secondary-gold-400); --nbg: var(--colors-secondary-gold-950); --nink: var(--colors-secondary-gold-200); }
+[data-theme=dark] .t-ss { --nc: var(--colors-blue-400); --nbg: var(--colors-blue-950); --nink: var(--colors-blue-200); }
+[data-theme=dark] .t-quiz { --nc: var(--colors-tertiary-lavendar-300); --nbg: var(--colors-tertiary-lavendar-950); --nink: var(--colors-tertiary-lavendar-200); }

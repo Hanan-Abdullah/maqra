@@ -17,10 +17,11 @@ import { defineCustomElement as defineNavHeaderActions } from '@platformscode/co
 import { defineCustomElement as defineTabs } from '@platformscode/core/components/dga-tabs-v2.js';
 import { defineCustomElement as defineTab } from '@platformscode/core/components/dga-tab.js';
 import { defineCustomElement as defineTableOfContent } from '@platformscode/core/components/dga-table-of-content.js';
+import { defineCustomElement as defineSwitch } from '@platformscode/core/components/dga-switch.js';
 
 export function registerPlatformsCode(): void {
   // Icons are read from assets/svg (copied from @platformscode/icons by angular.json, only the ones we use).
   setAssetPath(document.baseURI);
   [defineButton, defineIcon, defineSecondNav, defineSecondNavActions, defineSecondNavContent, defineSecondNavItem,
-    defineNavHeader, defineNavHeaderMain, defineNavHeaderActions, defineTabs, defineTab, defineTableOfContent].forEach((define) => define());
+    defineNavHeader, defineNavHeaderMain, defineNavHeaderActions, defineTabs, defineTab, defineTableOfContent, defineSwitch].forEach((define) => define());
 }

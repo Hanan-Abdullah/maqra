@@ -11,6 +11,7 @@ import { arabicDate } from '../core/arabic';
 import { DEFAULT_MODE, MODES, Mode, isMode } from './modes';
 import { ReadingHeroComponent } from './reading-hero.component';
 import { OriginalViewComponent } from './original-view.component';
+import { EasyViewComponent } from './easy-view.component';
 
 type PageState = 'loading' | 'ready' | 'not-found' | 'error';
 const MODE_KEY = 'maqra:mode';
@@ -22,7 +23,7 @@ const MODE_KEY = 'maqra:mode';
  */
 @Component({
   selector: 'app-reading-page',
-  imports: [ReadingHeroComponent, OriginalViewComponent],
+  imports: [ReadingHeroComponent, OriginalViewComponent, EasyViewComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './reading-page.component.html',
   styleUrl: './reading-page.component.css',
